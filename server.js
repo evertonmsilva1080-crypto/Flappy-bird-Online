@@ -37,6 +37,7 @@ app.use('/api', async (req, res, next) => {
     await conectarBanco();
     next();
 });
+app.use('/api/ranking', require('./routes/ranking'));
 app.use('/api/auth', require('./routes/auth'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/health', (req, res) => {

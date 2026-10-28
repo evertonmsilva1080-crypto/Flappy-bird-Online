@@ -8,15 +8,16 @@
 <style>
 * { box-sizing: border-box; }
 html, body { width: 100%; height: 100%; margin: 0; }
-body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: #e7f8fa; color: #164c55; font-family: Arial, sans-serif; }
-.account-bar { flex: 0 0 auto; min-height: 52px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left)); }
+body { min-height: 100vh; min-height: 100dvh; overflow: hidden; background: #70c5ce; color: #164c55; font-family: Arial, sans-serif; }
+.account-bar { position: fixed; inset: 0 0 auto; z-index: 1; min-height: 52px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left)); }
 .account-name { max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
 .account-stats { font-size: 12px; white-space: nowrap; }
 button { min-height: 44px; border: 0; border-radius: 8px; padding: 10px 14px; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; }
 .account-bar button, .auth-form button { background: #188e9e; color: #fff; }
+.account-bar #ranking-open { background: #fff; color: #164c55; }
 button:disabled { opacity: .65; cursor: wait; }
-.game-stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 4px 12px max(8px, env(safe-area-inset-bottom)); }
-#game-canvas { display: block; width: min(320px, calc(100vw - 24px), 54vh); height: auto; max-height: 100%; aspect-ratio: 2 / 3; border: 1px solid #000; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.game-stage { position: fixed; inset: 0; display: grid; place-items: center; }
+#game-canvas { display: block; width: min(100vw, 66.6667dvh); height: auto; max-height: 100dvh; aspect-ratio: 2 / 3; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .account-dialog { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); background: rgb(10 30 35 / 62%); }
 .account-dialog[hidden], .auth-form [hidden] { display: none; }
 .auth-card { width: min(100%, 390px); max-height: 100%; overflow-y: auto; padding: 24px; border-radius: 16px; background: #fff; box-shadow: 0 16px 50px rgb(0 0 0 / 25%); }
@@ -29,16 +30,25 @@ button:disabled { opacity: .65; cursor: wait; }
 .auth-form input { display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 11px; border: 1px solid #b8cacc; border-radius: 8px; font: inherit; }
 .auth-form button { width: 100%; margin-top: 8px; }
 .auth-message { min-height: 20px; margin: 12px 0 0; color: #a32222; font-size: 14px; overflow-wrap: anywhere; }
+.ranking-dialog { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); background: rgb(10 30 35 / 62%); }
+.ranking-dialog[hidden] { display: none; }
+.ranking-card { width: min(100%, 440px); max-height: 100%; display: flex; flex-direction: column; padding: 24px; border-radius: 16px; background: #fff; box-shadow: 0 16px 50px rgb(0 0 0 / 25%); }
+.ranking-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ranking-heading h1 { margin: 0; color: #164c55; font-size: 24px; }
+.ranking-close { flex: 0 0 auto; padding: 6px 12px; background: #edf5f6; color: #164c55; font-size: 20px; }
+.ranking-message { min-height: 20px; margin: 14px 0 8px; color: #526669; font-size: 14px; }
+.ranking-table-wrap { overflow-y: auto; }
+.ranking-table { width: 100%; border-collapse: collapse; text-align: left; }
+.ranking-table th, .ranking-table td { padding: 10px 8px; border-bottom: 1px solid #e2ecee; }
+.ranking-table th { position: sticky; top: 0; background: #edf5f6; color: #164c55; font-size: 13px; }
+.ranking-table td:last-child, .ranking-table th:last-child { text-align: right; }
 @media (max-width: 520px) {
   .account-bar { justify-content: center; gap: 6px 8px; min-height: 54px; }
   .account-name { max-width: 40vw; font-size: 14px; }
   .account-stats { font-size: 11px; }
   .account-bar button { min-height: 42px; padding: 9px 12px; font-size: 14px; }
   .auth-card { padding: 20px; }
-}
-@media (orientation: landscape) and (max-height: 520px) {
-  .account-bar { min-height: 44px; padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: 4px; }
-  #game-canvas { width: min(240px, 50vh); }
+  .ranking-card { padding: 20px; }
 }
 </style>
 </head>
@@ -46,12 +56,30 @@ button:disabled { opacity: .65; cursor: wait; }
 <header class="account-bar" aria-live="polite">
   <span class="account-name" id="account-name"></span>
   <span class="account-stats" id="account-stats"></span>
+  <button id="ranking-open" type="button">Ranking</button>
   <button id="account-open" type="button">Entrar / Criar conta</button>
   <button id="account-logout" type="button" hidden>Sair</button>
 </header>
 <main class="game-stage">
   <canvas id="game-canvas" width="320" height="480" aria-label="Jogo Flappy Bird"></canvas>
 </main>
+<div class="ranking-dialog" id="ranking-dialog" hidden>
+  <section class="ranking-card" role="dialog" aria-modal="true" aria-labelledby="ranking-title">
+    <div class="ranking-heading">
+      <h1 id="ranking-title">Ranking</h1>
+      <button class="ranking-close" id="ranking-close" type="button" aria-label="Fechar ranking">×</button>
+    </div>
+    <p class="ranking-message" id="ranking-message" role="status" aria-live="polite">Carregando ranking...</p>
+    <div class="ranking-table-wrap">
+      <table class="ranking-table">
+        <thead>
+          <tr><th scope="col">#</th><th scope="col">Jogador</th><th scope="col">Pontuação</th></tr>
+        </thead>
+        <tbody id="ranking-list"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 <div class="account-dialog" id="account-dialog" hidden>
   <section class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <button class="dialog-close" id="account-close" type="button" aria-label="Fechar">×</button>

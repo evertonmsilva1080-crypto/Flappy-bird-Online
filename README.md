@@ -25,6 +25,7 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - `POST /api/auth/login`: recebe `email` e `senha`.
 - `GET /api/auth/me`: retorna os dados da conta atual.
 - `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida. Requer `Authorization: Bearer <token>`.
+- `GET /api/ranking`: retorna o nome e o recorde de todos os usuários, ordenados da maior para a menor pontuação.
 
 ## Estrutura do jogo
 - public/script.js inicializa os módulos.
@@ -32,6 +33,7 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - public/game/bird.js, public/game/pipes.js, public/game/ground.js e public/game/score.js contêm entidades e regras.
 - public/game/assets.js e public/game/background.js cuidam de recursos visuais e sons.
 - public/game/account.js cuida de cadastro, login e gravação dos resultados.
+- public/game/ranking.js carrega e exibe o ranking público de jogadores.
 
 O canvas mantém a proporção do jogo e se ajusta à tela. Celulares usam toque; teclado continua disponível em computadores.
 
