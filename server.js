@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const fs = require('fs').promises;
 const mongoose = require('mongoose');
 const path = require('path');
 const migrateUsernameIndex = require('./migrations/username-index');
@@ -46,6 +47,34 @@ app.use('/api', (req, res, next) => {
     next();
 });
 app.use(express.json({ limit: '10kb' }));
+app.get('/api/maps', async (req, res) => {
+    const mapsDirectory = path.join(__dirname, 'public', 'maps');
+    const entries = await fs.readdir(mapsDirectory, { withFileTypes: true });
+    const maps = entries
+        .filter((entry) => entry.isFile() && /^[a-z0-9][a-z0-9_-]*\.png$/.test(entry.name))
+        .map((entry) => {
+            const id = path.basename(entry.name, '.png');
+            const knownNames = {
+                classic: 'Clássico',
+                city: 'Cidade',
+                night: 'Noturno',
+            };
+            const name = knownNames[id] || id
+                .split(/[-_]/)
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(' ');
+            return { id, name, imageUrl: `/maps/${entry.name}` };
+        })
+        .sort((a, b) => {
+            const defaultOrder = { classic: 0, city: 1, night: 2 };
+            const aOrder = defaultOrder[a.id] ?? 3;
+            const bOrder = defaultOrder[b.id] ?? 3;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+            return a.id.localeCompare(b.id);
+        });
+
+    res.set('Cache-Control', 'no-store').json(maps);
+});
 app.use('/api', async (req, res, next) => {
     await prepararBanco();
     next();

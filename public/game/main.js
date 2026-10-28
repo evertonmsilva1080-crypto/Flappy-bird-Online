@@ -1,4 +1,12 @@
-import { canvas, context, sprites, playFallSound } from './assets.js';
+import {
+  canvas,
+  context,
+  sprites,
+  loadMaps,
+  getMapBackgroundColor,
+  getMapGroundColor,
+  playFallSound,
+} from './assets.js';
 import { createBird } from './bird.js';
 import { createGround } from './ground.js';
 import { createPipes } from './pipes.js';
@@ -19,8 +27,22 @@ const pauseButton = document.querySelector('#pause-toggle');
 const pauseOverlay = document.querySelector('#pause-overlay');
 const resumeButton = document.querySelector('#resume-game');
 const bottomNav = document.querySelector('.bottom-nav');
+const mapToggleButton = document.querySelector('#map-toggle');
+const mapName = document.querySelector('#map-name');
 const pipeExtension = document.querySelector('#pipe-extension');
 const pipeExtensionContext = pipeExtension.getContext('2d');
+let maps = [{ id: 'classic', name: 'Clássico' }];
+let selectedMap = 'classic';
+
+function updateMapSelection() {
+  const mapIndex = maps.findIndex((map) => map.id === selectedMap);
+  const map = maps[mapIndex];
+  mapName.textContent = `Mapa ${mapIndex + 1}`;
+  mapToggleButton.setAttribute('aria-label', `Trocar mapa. Mapa atual: ${map.name}`);
+  document.body.dataset.map = selectedMap;
+  document.body.style.setProperty('--map-background', getMapBackgroundColor(selectedMap));
+  document.body.style.setProperty('--map-ground', getMapGroundColor(selectedMap));
+}
 
 function updatePauseControls() {
   pauseButton.hidden = screen !== 'playing';
@@ -67,23 +89,23 @@ function finishGame() {
 }
 
 function drawGameOver() {
-  drawBackground();
-  session.ground.draw();
+  drawBackground(selectedMap);
+  session.ground.draw(selectedMap);
   drawGameOverMessage();
   drawGameOverMedal(session.rankingPosition, session.score.value);
   drawGameOverStats(session.score.value, session.coins);
 }
 
 function render() {
-  drawBackground();
+  drawBackground(selectedMap);
 
   if (screen === 'start') {
-    session.ground.draw();
+    session.ground.draw(selectedMap);
     session.bird.draw();
     drawReadyMessage();
   } else if (screen === 'playing' || screen === 'paused') {
-    session.pipes.draw(frames);
-    session.ground.draw();
+    session.pipes.draw(frames, selectedMap);
+    session.ground.draw(selectedMap);
     session.bird.draw();
     session.score.draw(session.coins);
   } else if (screen === 'gameOver') {
@@ -105,7 +127,7 @@ function drawPipeExtension() {
 
   pipeExtensionContext.clearRect(0, 0, pipeExtension.width, pipeExtension.height);
   if (session && (screen === 'playing' || screen === 'paused')) {
-    session.pipes.drawUpperOverflow(pipeExtensionContext, topOffset);
+    session.pipes.drawUpperOverflow(pipeExtensionContext, topOffset, selectedMap);
   }
 }
 
@@ -142,11 +164,24 @@ function handleGameInput() {
   }
 }
 
-export function startGame() {
+export async function startGame() {
+  try {
+    maps = await loadMaps();
+    selectedMap = maps[0].id;
+    mapToggleButton.disabled = false;
+  } catch (error) {
+    console.error('Não foi possível carregar os mapas da pasta public/maps:', error);
+    mapToggleButton.disabled = true;
+    mapToggleButton.title = 'Não foi possível carregar os mapas.';
+  }
+
+  updateMapSelection();
+
   const start = () => {
     frames = 0;
     session = createSession();
     screen = 'start';
+    updateMapSelection();
     updatePauseControls();
     loop();
   };
@@ -177,6 +212,13 @@ export function startGame() {
     screen = 'playing';
     updatePauseControls();
     pauseButton.focus();
+  });
+
+  mapToggleButton.addEventListener('click', () => {
+    if (screen === 'playing' || screen === 'paused') return;
+    const currentMapIndex = maps.findIndex((map) => map.id === selectedMap);
+    selectedMap = maps[(currentMapIndex + 1) % maps.length].id;
+    updateMapSelection();
   });
 
   window.addEventListener('keydown', (event) => {

@@ -16,7 +16,16 @@
     <main class="game-stage">
       <div class="game-container">
         <canvas id="game-canvas" width="320" height="480" aria-label="Jogo Flappy Bird"></canvas>
-        <button class="pause-toggle" id="pause-toggle" type="button" hidden>Pausar</button>
+        <button
+          class="pause-toggle"
+          id="pause-toggle"
+          type="button"
+          aria-label="Pausar jogo"
+          title="Pausar jogo"
+          hidden
+        >
+          <span class="pause-icon" aria-hidden="true"><i></i><i></i></span>
+        </button>
       </div>
     </main>
 
@@ -120,6 +129,22 @@
           <path d="M4 8h3v21H4z" fill="#ae5927" stroke="#32170f" stroke-width="2"/>
         </svg>
         <span>Ranking</span>
+      </button>
+      <span class="bottom-nav-divider" aria-hidden="true"></span>
+      <button
+        class="bottom-nav-item"
+        id="map-toggle"
+        type="button"
+        aria-label="Trocar mapa. Mapa atual: Clássico"
+        title="Trocar mapa"
+        disabled
+      >
+        <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M3 7l8-4 10 4 8-4v22l-8 4-10-4-8 4z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+          <path d="M11 3v22M21 7v22" fill="none" stroke="#623019" stroke-width="2"/>
+          <path d="M5 10h4v5H5zM14 12h4v5h-4zM23 10h4v5h-4z" fill="#6cae73" stroke="#623019" stroke-width="1"/>
+        </svg>
+        <span id="map-name">Mapa 1</span>
       </button>
       <span class="bottom-nav-divider" aria-hidden="true"></span>
       <button class="bottom-nav-item" id="account-open" type="button">

@@ -18,6 +18,7 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - Cada usuário tem um ID do MongoDB, recorde pessoal e saldo de moedas.
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
+- A barra de navegação alterna automaticamente entre todos os mapas PNG encontrados em `public/maps/`.
 - Ao terminar a partida, a API salva o recorde usando o maior valor e soma as moedas coletadas na conta autenticada.
 - Para contas autenticadas, a tela de fim de jogo exibe uma medalha conforme a posição do recorde no ranking: dourada para 1º lugar, laranja para 2º, prata para 3º e branca para as posições seguintes com mais de um ponto.
 
@@ -39,6 +40,17 @@ Na primeira inicialização após a mudança para login por nome, o servidor rem
 - public/game/ranking.js carrega e exibe o ranking público de jogadores.
 
 O canvas mantém a proporção do jogo e se ajusta à tela. Celulares usam toque; teclado continua disponível em computadores.
+
+## Adicionar mapas
+
+Os mapas ficam em `public/maps/`. Para adicionar um, coloque nessa pasta um arquivo PNG com nome em letras minúsculas, números, hífens ou sublinhados, por exemplo `floresta.png`. O jogo descobre os arquivos automaticamente ao carregar; não é necessário editar o código. O nome exibido é derivado do nome do arquivo. O mapa atualiza ao recarregar a página.
+
+Cada arquivo deve ser um atlas completo de **666 x 722 pixels**, no mesmo formato de `classic.png`, `city.png` e `night.png`:
+- Cenário: posição `(390, 0)`, tamanho `275 x 204`.
+- Canos: sprites nas posições originais do atlas, começando em `(0, 169)` e `(52, 169)`.
+- Piso: posição `(0, 610)`, tamanho `224 x 112`.
+
+Mantenha `classic.png` na pasta: ele é o mapa padrão e também serve como referência do formato. As imagens dos mapas podem variar no cenário, nos canos e no piso; pássaro, moedas e elementos da interface continuam usando `sprites.png`. Adicione a imagem ao repositório e publique um novo deploy para disponibilizá-la no site.
 
 ## Deploy na Vercel
 

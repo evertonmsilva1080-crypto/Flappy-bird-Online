@@ -1,4 +1,11 @@
-import { canvas, context, sprites, playHitSound, playPointSound } from './assets.js';
+import {
+  canvas,
+  context,
+  sprites,
+  getMapSprites,
+  playHitSound,
+  playPointSound,
+} from './assets.js';
 
 const coinFrames = [
   { x: 134, width: 13 },
@@ -26,42 +33,55 @@ export function createPipes(bird, score, onCollectCoin, onGameOver) {
     skySpriteX: 52,
     pairs: [],
 
-    drawBody(x, y, height, spriteX, sourceY = this.spriteY + this.capHeight, targetContext = context) {
+    drawBody(
+      x,
+      y,
+      height,
+      spriteX,
+      sourceY = this.spriteY + this.capHeight,
+      targetContext = context,
+      map = 'classic',
+    ) {
       if (height <= 0) return;
-      targetContext.drawImage(sprites, spriteX, sourceY, this.width,
+      const mapSprites = getMapSprites(map);
+      targetContext.drawImage(mapSprites, spriteX, sourceY, this.width,
         this.height - this.capHeight, x, y, this.width, height);
     },
 
-    drawUpperPipe(x, bottomY, targetContext = context, offsetY = 0) {
+    drawUpperPipe(x, bottomY, targetContext = context, offsetY = 0, map = 'classic') {
       const bodyHeight = this.height - this.capHeight;
       this.drawBody(x, bottomY - this.height + offsetY, bodyHeight, this.skySpriteX,
-        this.spriteY, targetContext);
-      targetContext.drawImage(sprites, this.skySpriteX,
+        this.spriteY, targetContext, map);
+      const mapSprites = getMapSprites(map);
+      targetContext.drawImage(mapSprites, this.skySpriteX,
         this.spriteY + this.height - this.capHeight,
         this.width, this.capHeight, x, bottomY - this.capHeight + offsetY,
         this.width, this.capHeight);
     },
 
-    drawUpperOverflow(targetContext, offsetY) {
+    drawUpperOverflow(targetContext, offsetY, map = 'classic') {
       this.pairs.forEach((pair) => {
-        this.drawUpperPipe(pair.x, pair.passages[0].y, targetContext, offsetY);
+        this.drawUpperPipe(pair.x, pair.passages[0].y, targetContext, offsetY, map);
       });
     },
 
-    drawLowerPipe(x, topY) {
-      context.drawImage(sprites, this.groundSpriteX, this.spriteY,
+    drawLowerPipe(x, topY, map = 'classic') {
+      const mapSprites = getMapSprites(map);
+      context.drawImage(mapSprites, this.groundSpriteX, this.spriteY,
         this.width, this.capHeight, x, topY, this.width, this.capHeight);
       this.drawBody(x, topY + this.capHeight,
-        this.height - this.capHeight, this.groundSpriteX);
+        this.height - this.capHeight, this.groundSpriteX, undefined, context, map);
     },
 
-    drawDivider(x, topY, bottomY) {
+    drawDivider(x, topY, bottomY, map = 'classic') {
       const bodyTop = topY + this.capHeight;
       const bodyBottom = bottomY - this.capHeight;
-      context.drawImage(sprites, this.groundSpriteX, this.spriteY,
+      const mapSprites = getMapSprites(map);
+      context.drawImage(mapSprites, this.groundSpriteX, this.spriteY,
         this.width, this.capHeight, x, topY, this.width, this.capHeight);
-      this.drawBody(x, bodyTop, bodyBottom - bodyTop, this.groundSpriteX);
-      context.drawImage(sprites, this.skySpriteX,
+      this.drawBody(x, bodyTop, bodyBottom - bodyTop, this.groundSpriteX,
+        undefined, context, map);
+      context.drawImage(mapSprites, this.skySpriteX,
         this.spriteY + this.height - this.capHeight,
         this.width, this.capHeight, x, bodyBottom, this.width, this.capHeight);
     },
@@ -82,17 +102,17 @@ export function createPipes(bird, score, onCollectCoin, onGameOver) {
       );
     },
 
-    draw(frameCount = 0) {
+    draw(frameCount = 0, map = 'classic') {
       this.pairs.forEach((pair) => {
         const firstGap = pair.passages[0];
         const lastGap = pair.passages[pair.passages.length - 1];
-        this.drawUpperPipe(pair.x, firstGap.y);
+        this.drawUpperPipe(pair.x, firstGap.y, context, 0, map);
 
         if (pair.passages.length === 2) {
-          this.drawDivider(pair.x, firstGap.y + firstGap.height, pair.passages[1].y);
+          this.drawDivider(pair.x, firstGap.y + firstGap.height, pair.passages[1].y, map);
         }
 
-        this.drawLowerPipe(pair.x, lastGap.y + lastGap.height);
+        this.drawLowerPipe(pair.x, lastGap.y + lastGap.height, map);
         if (pair.coin && !pair.coin.collected) this.drawCoin(pair.coin, frameCount);
       });
     },

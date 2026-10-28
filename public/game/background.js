@@ -1,10 +1,17 @@
-import { canvas, context, sprites } from './assets.js';
+import {
+  canvas,
+  context,
+  sprites,
+  getMapSprites,
+  getMapBackgroundColor,
+} from './assets.js';
 
-export function drawBackground() {
-  context.fillStyle = '#70c5ce';
+export function drawBackground(map) {
+  const mapSprites = getMapSprites(map);
+  context.fillStyle = getMapBackgroundColor(map);
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(sprites, 390, 0, 275, 204, 0, canvas.height - 204, 275, 204);
-  context.drawImage(sprites, 390, 0, 275, 204, 275, canvas.height - 204, 275, 204);
+  context.drawImage(mapSprites, 390, 0, 275, 204, 0, canvas.height - 204, 275, 204);
+  context.drawImage(mapSprites, 390, 0, 275, 204, 275, canvas.height - 204, 275, 204);
 }
 
 export function drawReadyMessage() {
