@@ -120,7 +120,19 @@ router.post('/game-result', autenticar, async (req, res) => {
             { new: true, runValidators: true }
         );
         if (!usuario) return res.status(404).json({ message: 'Conta não encontrada.' });
-        return res.json({ usuario: dadosPublicos(usuario) });
+        const jogadoresAcima = await Usuario.countDocuments({
+            $or: [
+                { pontuacaoMaxima: { $gt: usuario.pontuacaoMaxima } },
+                {
+                    pontuacaoMaxima: usuario.pontuacaoMaxima,
+                    nome: { $lt: usuario.nome },
+                },
+            ],
+        }).collation(nomeCollation);
+        return res.json({
+            usuario: dadosPublicos(usuario),
+            posicaoRanking: jogadoresAcima + 1,
+        });
     } catch (erro) {
         console.error('Erro ao salvar resultado da partida:', erro);
         return res.status(500).json({ message: 'Não foi possível salvar o resultado.' });

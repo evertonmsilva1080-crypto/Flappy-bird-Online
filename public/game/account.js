@@ -1,6 +1,6 @@
 export async function saveGameResult({ score, coins }) {
   const token = localStorage.getItem('flappy-token');
-  if (!token) return;
+  if (!token) return null;
 
   const response = await fetch('/api/auth/game-result', {
     method: 'POST',
@@ -17,6 +17,7 @@ export async function saveGameResult({ score, coins }) {
   }
 
   window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: data.usuario }));
+  return data;
 }
 
 export function initializeAccount() {
@@ -29,6 +30,11 @@ export function initializeAccount() {
   const accountName = document.querySelector('#account-name');
   const accountStats = document.querySelector('#account-stats');
   const form = document.querySelector('#auth-form');
+  const formContent = document.querySelector('#account-form-content');
+  const profileContent = document.querySelector('#account-profile');
+  const profileName = document.querySelector('#profile-name');
+  const profileStats = document.querySelector('#profile-stats');
+  const dialogTitle = document.querySelector('#auth-title');
   const message = document.querySelector('#auth-message');
   const nameInput = document.querySelector('#auth-name');
   const passwordInput = document.querySelector('#auth-password');
@@ -36,15 +42,22 @@ export function initializeAccount() {
   const loginButton = document.querySelector('#show-login');
   const registerButton = document.querySelector('#show-register');
   let mode = 'login';
+  let currentUser = null;
 
   function updateAccount(user) {
+    currentUser = user;
     accountName.textContent = user ? 'Olá, ' + user.nome : '';
     accountName.title = user ? 'ID: ' + user.id : '';
-    accountStats.textContent = user
+    const stats = user
       ? 'Recorde: ' + (user.pontuacaoMaxima || 0) + ' · Moedas: ' + (user.moedas || 0)
       : '';
-    openButton.hidden = Boolean(user);
+    accountStats.textContent = stats;
+    profileName.textContent = user ? user.nome : '';
+    profileStats.textContent = stats;
+    formContent.hidden = Boolean(user);
+    profileContent.hidden = !user;
     logoutButton.hidden = !user;
+    dialogTitle.textContent = user ? 'Perfil' : 'Sua conta';
   }
 
   function setMode(nextMode) {
@@ -98,10 +111,23 @@ export function initializeAccount() {
     nameInput.focus();
   }
 
-  openButton.addEventListener('click', () => openDialog('login'));
-  closeButton.addEventListener('click', () => { dialog.hidden = true; });
+  openButton.addEventListener('click', () => {
+    if (currentUser) {
+      dialog.hidden = false;
+      closeButton.focus();
+      return;
+    }
+    openDialog('login');
+  });
+  closeButton.addEventListener('click', () => {
+    dialog.hidden = true;
+    openButton.focus();
+  });
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) dialog.hidden = true;
+    if (event.target === dialog) {
+      dialog.hidden = true;
+      openButton.focus();
+    }
   });
   loginButton.addEventListener('click', () => setMode('login'));
   registerButton.addEventListener('click', () => setMode('register'));
@@ -135,6 +161,8 @@ export function initializeAccount() {
   logoutButton.addEventListener('click', () => {
     localStorage.removeItem('flappy-token');
     updateAccount(null);
+    dialog.hidden = true;
+    openButton.focus();
   });
 
   const token = localStorage.getItem('flappy-token');

@@ -19,12 +19,13 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
 - Ao terminar a partida, a API salva o recorde usando o maior valor e soma as moedas coletadas na conta autenticada.
+- Para contas autenticadas, a tela de fim de jogo exibe uma medalha conforme a posição do recorde no ranking: dourada para 1º lugar, laranja para 2º, prata para 3º e branca para as posições seguintes com mais de um ponto.
 
 ## API
 - `POST /api/auth/register`: recebe `nome` e `senha`. O nome deve ser único, sem diferenciar maiúsculas de minúsculas.
 - `POST /api/auth/login`: recebe `nome` e `senha`.
 - `GET /api/auth/me`: retorna os dados da conta atual.
-- `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida. Requer `Authorization: Bearer <token>`.
+- `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida e retorna `posicaoRanking` do recorde atualizado. Requer `Authorization: Bearer <token>`.
 - `GET /api/ranking`: retorna o nome e o recorde de todos os usuários, ordenados da maior para a menor pontuação.
 
 Na primeira inicialização após a mudança para login por nome, o servidor remove o índice de e-mail antigo e cria um índice único para os nomes. Se já houver contas com nomes repetidos, renomeie as contas duplicadas no MongoDB antes de iniciar o servidor.

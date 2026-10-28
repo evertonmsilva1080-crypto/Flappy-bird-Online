@@ -11,9 +11,6 @@
     <header class="account-bar" aria-live="polite">
       <span class="account-name" id="account-name"></span>
       <span class="account-stats" id="account-stats"></span>
-      <button id="ranking-open" type="button">Ranking</button>
-      <button id="account-open" type="button">Entrar / Criar conta</button>
-      <button id="account-logout" type="button" hidden>Sair</button>
     </header>
 
     <main class="game-stage">
@@ -38,30 +35,29 @@
 
     <div class="ranking-dialog" id="ranking-dialog" hidden>
       <section class="ranking-card" role="dialog" aria-modal="true" aria-labelledby="ranking-title">
-        <div class="ranking-heading">
-          <h1 id="ranking-title">Ranking</h1>
-          <button
-            class="ranking-close"
-            id="ranking-close"
-            type="button"
-            aria-label="Fechar ranking"
-          >×</button>
+        <h1 class="visually-hidden" id="ranking-title">Ranking</h1>
+        <button
+          class="ranking-close"
+          id="ranking-close"
+          type="button"
+          aria-label="Fechar ranking"
+        >×</button>
+        <div class="ranking-board">
+          <div class="ranking-table-wrap">
+            <table class="ranking-table">
+              <thead class="visually-hidden">
+                <tr>
+                  <th scope="col">Nome</th>
+                  <th scope="col">Pontuação</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-list"></tbody>
+            </table>
+          </div>
         </div>
         <p class="ranking-message" id="ranking-message" role="status" aria-live="polite">
           Carregando ranking...
         </p>
-        <div class="ranking-table-wrap">
-          <table class="ranking-table">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Jogador</th>
-                <th scope="col">Pontuação</th>
-              </tr>
-            </thead>
-            <tbody id="ranking-list"></tbody>
-          </table>
-        </div>
       </section>
     </div>
 
@@ -74,40 +70,66 @@
           aria-label="Fechar"
         >×</button>
         <h1 id="auth-title">Sua conta</h1>
-        <div class="auth-switch">
-          <button id="show-login" type="button" aria-pressed="true">Entrar</button>
-          <button id="show-register" type="button" aria-pressed="false">Criar conta</button>
+        <div id="account-form-content">
+          <div class="auth-switch">
+            <button id="show-login" type="button" aria-pressed="true">Entrar</button>
+            <button id="show-register" type="button" aria-pressed="false">Criar conta</button>
+          </div>
+          <form class="auth-form" id="auth-form">
+            <label>
+              Nome
+              <input
+                id="auth-name"
+                name="name"
+                autocomplete="username"
+                maxlength="60"
+                minlength="2"
+                required
+                placeholder="Seu nome"
+              >
+            </label>
+            <label>
+              Senha
+              <input
+                id="auth-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                minlength="8"
+                required
+                placeholder="Mínimo de 8 caracteres"
+              >
+            </label>
+            <button id="auth-submit" type="submit">Entrar</button>
+            <p class="auth-message" id="auth-message" role="status"></p>
+          </form>
         </div>
-        <form class="auth-form" id="auth-form">
-          <label>
-            Nome
-            <input
-              id="auth-name"
-              name="name"
-              autocomplete="username"
-              maxlength="60"
-              minlength="2"
-              required
-              placeholder="Seu nome"
-            >
-          </label>
-          <label>
-            Senha
-            <input
-              id="auth-password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              minlength="8"
-              required
-              placeholder="Mínimo de 8 caracteres"
-            >
-          </label>
-          <button id="auth-submit" type="submit">Entrar</button>
-          <p class="auth-message" id="auth-message" role="status"></p>
-        </form>
+        <div class="account-profile" id="account-profile" hidden>
+          <p class="profile-name" id="profile-name"></p>
+          <p class="profile-stats" id="profile-stats"></p>
+          <button class="profile-logout" id="account-logout" type="button">Sair da conta</button>
+        </div>
       </section>
     </div>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <button class="bottom-nav-item" id="ranking-open" type="button">
+        <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M7 3h16l4 4v22H7z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+          <path d="M22 4v5h5M11 13h12M11 18h12M11 23h12" fill="none" stroke="#623019" stroke-width="2"/>
+          <path d="M4 8h3v21H4z" fill="#ae5927" stroke="#32170f" stroke-width="2"/>
+        </svg>
+        <span>Ranking</span>
+      </button>
+      <span class="bottom-nav-divider" aria-hidden="true"></span>
+      <button class="bottom-nav-item" id="account-open" type="button">
+        <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14M5 29v-5a11 11 0 0 1 22 0v5z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+          <path d="M9 25h14" stroke="#fff0b0" stroke-width="2"/>
+        </svg>
+        <span>Perfil</span>
+      </button>
+    </nav>
 
     <script type="module" src="./script.js"></script>
   </body>

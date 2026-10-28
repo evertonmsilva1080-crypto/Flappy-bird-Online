@@ -1,5 +1,6 @@
 const express = require('express');
 const Usuario = require('../models/Usuario');
+const { collation: nomeCollation } = require('../models/nomeUsuario');
 
 const router = express.Router();
 
@@ -8,6 +9,7 @@ router.get('/', async (req, res) => {
         const usuarios = await Usuario.find({})
             .select('nome pontuacaoMaxima -_id')
             .sort({ pontuacaoMaxima: -1, nome: 1 })
+            .collation(nomeCollation)
             .lean();
         return res.json({
             ranking: usuarios.map((usuario) => ({

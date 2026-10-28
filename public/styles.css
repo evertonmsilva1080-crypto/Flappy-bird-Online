@@ -66,20 +66,15 @@ button:disabled {
   white-space: nowrap;
 }
 
-.account-bar button,
 .auth-form button {
   background: #188e9e;
   color: #fff;
 }
 
-.account-bar #ranking-open {
-  background: #fff;
-  color: #164c55;
-}
-
 /* Game stage */
 .game-stage {
   position: fixed;
+  z-index: 0;
   inset: 0;
   display: grid;
   place-items: center;
@@ -161,7 +156,7 @@ button:disabled {
 /* Account dialog */
 .account-dialog {
   position: fixed;
-  z-index: 5;
+  z-index: 6;
   inset: 0;
   display: grid;
   place-items: center;
@@ -173,7 +168,9 @@ button:disabled {
 }
 
 .account-dialog[hidden],
-.auth-form [hidden] {
+.auth-form [hidden],
+.account-profile[hidden],
+#account-form-content[hidden] {
   display: none;
 }
 
@@ -249,10 +246,51 @@ button:disabled {
   font-size: 14px;
 }
 
+.account-profile {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  text-align: center;
+}
+
+.profile-name,
+.profile-stats {
+  margin: 0;
+}
+
+.profile-name {
+  color: #164c55;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.profile-stats {
+  color: #526669;
+  font-size: 14px;
+}
+
+.profile-logout {
+  width: 100%;
+  margin-top: 8px;
+  background: #188e9e;
+  color: #fff;
+}
+
 /* Ranking dialog */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
 .ranking-dialog {
   position: fixed;
-  z-index: 4;
+  z-index: 5;
   inset: 0;
   display: grid;
   place-items: center;
@@ -268,71 +306,173 @@ button:disabled {
 }
 
 .ranking-card {
-  display: flex;
-  width: min(100%, 440px);
-  max-height: 100%;
-  flex-direction: column;
-  padding: 24px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 16px 50px rgb(0 0 0 / 25%);
-}
-
-.ranking-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.ranking-heading h1 {
-  margin: 0;
-  color: #164c55;
-  font-size: 24px;
+  position: relative;
+  width: min(100%, 452px);
 }
 
 .ranking-close {
-  flex: 0 0 auto;
-  padding: 6px 12px;
-  background: #edf5f6;
-  color: #164c55;
-  font-size: 20px;
+  position: absolute;
+  z-index: 1;
+  top: -48px;
+  right: 0;
+  display: grid;
+  width: 40px;
+  min-height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 3px solid #f4a91d;
+  border-radius: 0;
+  background: #e4dd9d;
+  box-shadow: inset 0 0 0 2px #fff3a8, 3px 3px 0 #9c5425;
+  color: #c65300;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 1px 1px 0 #fff3a8;
+}
+
+.ranking-close:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: inset 0 0 0 2px #fff3a8, 4px 4px 0 #9c5425;
+}
+
+.ranking-close:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.ranking-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 226 / 157;
+  background-image: url('./sprites.png');
+  background-repeat: no-repeat;
+  background-position: 30.455% 64.425%;
+  background-size: 294.69% 459.87%;
+  image-rendering: pixelated;
 }
 
 .ranking-message {
-  min-height: 20px;
-  margin: 14px 0 8px;
-  color: #526669;
-  font-size: 14px;
+  min-height: 1.25em;
+  margin: 8px 0 0;
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
 }
 
 .ranking-table-wrap {
+  position: absolute;
+  top: 35%;
+  right: 6%;
+  bottom: 7%;
+  left: 6%;
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.ranking-table-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  table-layout: fixed;
+  color: #c65300;
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(10px, 3.1vw, 14px);
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  text-shadow: 0 0 1px currentColor;
 }
 
-.ranking-table th,
 .ranking-table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #e2ecee;
+  max-width: 0;
+  overflow: hidden;
+  padding: 0 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ranking-table th {
-  position: sticky;
-  top: 0;
-  background: #edf5f6;
-  color: #164c55;
-  font-size: 13px;
+.ranking-table td:first-child {
+  width: 50%;
 }
 
-.ranking-table td:last-child,
-.ranking-table th:last-child {
-  text-align: right;
+/* Bottom navigation */
+.bottom-nav {
+  position: fixed;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  width: min(100%, 533px);
+  min-height: 61px;
+  grid-template-columns: 1fr 2px 1fr;
+  align-items: stretch;
+  margin-inline: auto;
+  padding:
+    4px
+    max(8px, env(safe-area-inset-right))
+    max(4px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  border: 2px solid #35180f;
+  border-bottom: 0;
+  background:
+    linear-gradient(90deg, transparent 0 7px, rgb(255 199 106 / 12%) 7px 9px, transparent 9px 18px),
+    linear-gradient(#6f371f, #482316 45%, #35190f);
+  box-shadow: inset 0 2px 0 #b36a36, 0 -3px 8px rgb(34 17 10 / 28%);
+}
+
+.bottom-nav[hidden] {
+  display: none;
+}
+
+.bottom-nav-item {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 14px);
+  padding: 6px 10px;
+  border-radius: 0;
+  background: transparent;
+  color: #f2c56f;
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(12px, 3.2vw, 17px);
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #31150d, 0 0 4px #c97936;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item:focus-visible {
+  background: rgb(244 184 90 / 14%);
+  color: #ffe4a0;
+}
+
+.bottom-nav-item:focus-visible {
+  outline: 2px solid #ffd47e;
+  outline-offset: -3px;
+}
+
+.bottom-nav-icon {
+  width: clamp(22px, 6vw, 32px);
+  height: clamp(22px, 6vw, 32px);
+  flex: 0 0 auto;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+.bottom-nav-divider {
+  align-self: center;
+  width: 2px;
+  height: 70%;
+  background: #a45b31;
+  box-shadow: 1px 0 #32170f, -1px 0 #d3934b;
 }
 
 /* Small screens */
@@ -353,14 +493,11 @@ button:disabled {
     font-size: 11px;
   }
 
-  .account-bar button {
-    min-height: 42px;
-    padding: 9px 12px;
-    font-size: 14px;
+  .auth-card {
+    padding: 20px;
   }
 
-  .auth-card,
-  .ranking-card {
-    padding: 20px;
+  .bottom-nav {
+    width: 100%;
   }
 }

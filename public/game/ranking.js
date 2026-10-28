@@ -30,15 +30,13 @@ export function initializeRanking() {
       }
 
       const rows = document.createDocumentFragment();
-      result.ranking.forEach((player, index) => {
+      result.ranking.forEach((player) => {
         const row = document.createElement('tr');
-        const place = document.createElement('td');
         const name = document.createElement('td');
         const score = document.createElement('td');
-        place.textContent = String(index + 1);
         name.textContent = String(player.nome);
         score.textContent = String(player.pontuacao);
-        row.append(place, name, score);
+        row.append(name, score);
         rows.append(row);
       });
       list.append(rows);
