@@ -27,6 +27,7 @@ const pauseButton = document.querySelector('#pause-toggle');
 const pauseOverlay = document.querySelector('#pause-overlay');
 const resumeButton = document.querySelector('#resume-game');
 const bottomNav = document.querySelector('.bottom-nav');
+const homeButton = document.querySelector('#home-open');
 const mapToggleButton = document.querySelector('#map-toggle');
 const mapName = document.querySelector('#map-name');
 const pipeExtension = document.querySelector('#pipe-extension');
@@ -107,12 +108,18 @@ function render() {
     session.pipes.draw(frames, selectedMap);
     session.ground.draw(selectedMap);
     session.bird.draw();
-    session.score.draw(session.coins);
+    session.score.draw(session.coins, getScoreHudTop());
   } else if (screen === 'gameOver') {
     drawGameOver();
   }
 
   drawPipeExtension();
+}
+
+function getScoreHudTop() {
+  const scale = canvas.getBoundingClientRect().width / canvas.width;
+  const pauseTop = Number.parseFloat(getComputedStyle(pauseButton).top);
+  return (pauseTop + 40 + 6) / scale;
 }
 
 function drawPipeExtension() {
@@ -219,6 +226,13 @@ export async function startGame() {
     const currentMapIndex = maps.findIndex((map) => map.id === selectedMap);
     selectedMap = maps[(currentMapIndex + 1) % maps.length].id;
     updateMapSelection();
+  });
+
+  homeButton.addEventListener('click', () => {
+    frames = 0;
+    session = createSession();
+    screen = 'start';
+    updatePauseControls();
   });
 
   window.addEventListener('keydown', (event) => {

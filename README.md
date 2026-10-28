@@ -18,7 +18,7 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - Cada usuário tem um ID do MongoDB, recorde pessoal e saldo de moedas.
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
-- A barra de navegação alterna automaticamente entre todos os mapas PNG encontrados em `public/maps/`.
+- A barra de navegação oferece atalhos para a tela inicial, o ranking e o perfil, além de alternar automaticamente entre todos os mapas PNG encontrados em `public/maps/`.
 - Ao terminar a partida, a API salva o recorde usando o maior valor e soma as moedas coletadas na conta autenticada.
 - Para contas autenticadas, a tela de fim de jogo exibe uma medalha conforme a posição do recorde no ranking: dourada para 1º lugar, laranja para 2º, prata para 3º e branca para as posições seguintes com mais de um ponto.
 
