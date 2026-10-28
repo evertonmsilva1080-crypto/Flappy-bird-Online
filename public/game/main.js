@@ -82,7 +82,7 @@ function render() {
     session.bird.draw();
     drawReadyMessage();
   } else if (screen === 'playing' || screen === 'paused') {
-    session.pipes.draw();
+    session.pipes.draw(frames);
     session.ground.draw();
     session.bird.draw();
     session.score.draw(session.coins);

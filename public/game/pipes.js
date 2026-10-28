@@ -1,5 +1,17 @@
 import { canvas, context, sprites, playHitSound, playPointSound } from './assets.js';
 
+const coinFrames = [
+  { x: 134, width: 13 },
+  { x: 151, width: 18 },
+  { x: 173, width: 29 },
+  { x: 206, width: 30 },
+  { x: 240, width: 29 },
+  { x: 272, width: 19 },
+  { x: 295, width: 13 },
+];
+const coinFrameHeight = 30;
+const coinFrameDuration = 5;
+
 export function createPipes(bird, score, onCollectCoin, onGameOver) {
   const pipes = {
     width: 52,
@@ -54,21 +66,23 @@ export function createPipes(bird, score, onCollectCoin, onGameOver) {
         this.width, this.capHeight, x, bodyBottom, this.width, this.capHeight);
     },
 
-    drawCoin(coin) {
-      context.beginPath();
-      context.fillStyle = '#ffd447';
-      context.strokeStyle = '#9a6a00';
-      context.lineWidth = 2;
-      context.arc(coin.x, coin.y, this.coinRadius, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-      context.beginPath();
-      context.fillStyle = '#fff3a6';
-      context.arc(coin.x - 3, coin.y - 3, 2.5, 0, Math.PI * 2);
-      context.fill();
+    drawCoin(coin, frameCount = 0) {
+      const frameIndex = Math.floor(frameCount / coinFrameDuration) % coinFrames.length;
+      const frame = coinFrames[frameIndex];
+      context.drawImage(
+        sprites,
+        frame.x,
+        541,
+        frame.width,
+        coinFrameHeight,
+        coin.x - frame.width / 2,
+        coin.y - coinFrameHeight / 2,
+        frame.width,
+        coinFrameHeight,
+      );
     },
 
-    draw() {
+    draw(frameCount = 0) {
       this.pairs.forEach((pair) => {
         const firstGap = pair.passages[0];
         const lastGap = pair.passages[pair.passages.length - 1];
@@ -79,7 +93,7 @@ export function createPipes(bird, score, onCollectCoin, onGameOver) {
         }
 
         this.drawLowerPipe(pair.x, lastGap.y + lastGap.height);
-        if (pair.coin && !pair.coin.collected) this.drawCoin(pair.coin);
+        if (pair.coin && !pair.coin.collected) this.drawCoin(pair.coin, frameCount);
       });
     },
 
