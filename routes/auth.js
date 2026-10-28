@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const { collation: nomeCollation } = require('../models/nomeUsuario');
 
 const router = express.Router();
 
@@ -13,7 +14,6 @@ function dadosPublicos(usuario) {
     return {
         id: String(usuario._id),
         nome: usuario.nome,
-        email: usuario.email,
         pontuacaoMaxima: usuario.pontuacaoMaxima || 0,
         moedas: usuario.moedas || 0,
     };
@@ -35,29 +35,30 @@ function autenticar(req, res, next) {
 
 router.post('/register', async (req, res) => {
     const nome = String(req.body?.nome || '').trim();
-    const email = String(req.body?.email || '').trim().toLowerCase();
     const senha = String(req.body?.senha || '');
 
     if (nome.length < 2 || nome.length > 60) {
         return res.status(400).json({ message: 'Informe um nome entre 2 e 60 caracteres.' });
-    }
-    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return res.status(400).json({ message: 'Informe um e-mail válido.' });
     }
     if (senha.length < 8 || senha.length > 72) {
         return res.status(400).json({ message: 'A senha deve ter entre 8 e 72 caracteres.' });
     }
 
     try {
+        const nomeEmUso = await Usuario.exists({ nome }).collation(nomeCollation);
+        if (nomeEmUso) {
+            return res.status(409).json({ message: 'Este nome já está em uso. Escolha outro.' });
+        }
+
         const senhaHash = await bcrypt.hash(senha, 12);
-        const usuario = await Usuario.create({ nome, email, senhaHash });
+        const usuario = await Usuario.create({ nome, senhaHash });
         return res.status(201).json({
             usuario: dadosPublicos(usuario),
             token: criarToken(usuario),
         });
     } catch (erro) {
         if (erro.code === 11000) {
-            return res.status(409).json({ message: 'Já existe uma conta com este e-mail.' });
+            return res.status(409).json({ message: 'Este nome já está em uso. Escolha outro.' });
         }
         if (erro.name === 'ValidationError') {
             return res.status(400).json({ message: 'Confira os dados informados.' });
@@ -68,13 +69,15 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const email = String(req.body?.email || '').trim().toLowerCase();
+    const nome = String(req.body?.nome || '').trim();
     const senha = String(req.body?.senha || '');
 
     try {
-        const usuario = await Usuario.findOne({ email }).select('+senhaHash');
+        const usuario = await Usuario.findOne({ nome })
+            .collation(nomeCollation)
+            .select('+senhaHash');
         if (!usuario || !(await bcrypt.compare(senha, usuario.senhaHash))) {
-            return res.status(401).json({ message: 'E-mail ou senha incorretos.' });
+            return res.status(401).json({ message: 'Nome ou senha incorretos.' });
         }
         return res.json({
             usuario: dadosPublicos(usuario),

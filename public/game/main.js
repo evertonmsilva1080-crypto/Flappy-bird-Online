@@ -9,6 +9,16 @@ import { saveGameResult } from './account.js';
 let frames = 0;
 let screen = 'start';
 let session;
+const pauseButton = document.querySelector('#pause-toggle');
+const pauseOverlay = document.querySelector('#pause-overlay');
+const resumeButton = document.querySelector('#resume-game');
+const pipeExtension = document.querySelector('#pipe-extension');
+const pipeExtensionContext = pipeExtension.getContext('2d');
+
+function updatePauseControls() {
+  pauseButton.hidden = screen !== 'playing';
+  pauseOverlay.hidden = screen !== 'paused';
+}
 
 function createSession() {
   const ground = createGround();
@@ -36,6 +46,7 @@ function finishGame() {
   if (!session || session.finished) return;
   session.finished = true;
   screen = 'gameOver';
+  updatePauseControls();
   saveGameResult({ score: session.score.value, coins: session.coins })
     .catch((error) => console.error('Falha ao salvar o resultado da partida:', error));
 }
@@ -59,13 +70,31 @@ function render() {
     session.ground.draw();
     session.bird.draw();
     drawReadyMessage();
-  } else if (screen === 'playing') {
+  } else if (screen === 'playing' || screen === 'paused') {
     session.pipes.draw();
     session.ground.draw();
     session.bird.draw();
     session.score.draw(session.coins);
-  } else {
+  } else if (screen === 'gameOver') {
     drawGameOver();
+  }
+
+  drawPipeExtension();
+}
+
+function drawPipeExtension() {
+  const canvasBounds = canvas.getBoundingClientRect();
+  const scale = canvasBounds.width / canvas.width;
+  const topOffset = canvasBounds.top / scale;
+  const extensionHeight = Math.ceil(topOffset);
+
+  if (pipeExtension.width !== canvas.width) pipeExtension.width = canvas.width;
+  if (pipeExtension.height !== extensionHeight) pipeExtension.height = extensionHeight;
+  if (extensionHeight === 0) return;
+
+  pipeExtensionContext.clearRect(0, 0, pipeExtension.width, pipeExtension.height);
+  if (session && (screen === 'playing' || screen === 'paused')) {
+    session.pipes.drawUpperOverflow(pipeExtensionContext, topOffset);
   }
 }
 
@@ -91,12 +120,14 @@ function handleGameInput() {
   if (screen === 'start') {
     frames = 0;
     screen = 'playing';
+    updatePauseControls();
   } else if (screen === 'playing') {
     session.bird.jump();
-  } else {
+  } else if (screen === 'gameOver') {
     frames = 0;
     session = createSession();
     screen = 'start';
+    updatePauseControls();
   }
 }
 
@@ -105,6 +136,7 @@ export function startGame() {
     frames = 0;
     session = createSession();
     screen = 'start';
+    updatePauseControls();
     loop();
   };
 
@@ -120,6 +152,20 @@ export function startGame() {
   canvas.addEventListener('pointerdown', (event) => {
     event.preventDefault();
     handleGameInput();
+  });
+
+  pauseButton.addEventListener('click', () => {
+    if (screen !== 'playing') return;
+    screen = 'paused';
+    updatePauseControls();
+    resumeButton.focus();
+  });
+
+  resumeButton.addEventListener('click', () => {
+    if (screen !== 'paused') return;
+    screen = 'playing';
+    updatePauseControls();
+    pauseButton.focus();
   });
 
   window.addEventListener('keydown', (event) => {

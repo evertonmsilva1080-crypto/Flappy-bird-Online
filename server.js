@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const migrateUsernameIndex = require('./migrations/username-index');
 const app = express();
 const port = Number(process.env.PORT) || 8000;
 let conexaoMongo;
+let migracaoNomes;
 
 async function conectarBanco() {
     if (!process.env.MONGODB_URI) {
@@ -25,6 +27,17 @@ async function conectarBanco() {
     await conexaoMongo;
 }
 
+async function prepararBanco() {
+    await conectarBanco();
+    if (!migracaoNomes) {
+        migracaoNomes = migrateUsernameIndex().catch((erro) => {
+            migracaoNomes = null;
+            throw erro;
+        });
+    }
+    await migracaoNomes;
+}
+
 app.disable('x-powered-by');
 app.use('/api', (req, res, next) => {
     res.on('finish', () => {
@@ -34,7 +47,7 @@ app.use('/api', (req, res, next) => {
 });
 app.use(express.json({ limit: '10kb' }));
 app.use('/api', async (req, res, next) => {
-    await conectarBanco();
+    await prepararBanco();
     next();
 });
 app.use('/api/ranking', require('./routes/ranking'));
@@ -57,7 +70,7 @@ app.use((erro, req, res, next) => {
 });
 
 async function iniciarServidor() {
-    await conectarBanco();
+    await prepararBanco();
     app.listen(port, () => {
         console.log('Flappy Bird disponível em http://localhost:' + port);
     });

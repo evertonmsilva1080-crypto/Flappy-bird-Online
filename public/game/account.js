@@ -30,7 +30,6 @@ export function initializeAccount() {
   const accountStats = document.querySelector('#account-stats');
   const form = document.querySelector('#auth-form');
   const message = document.querySelector('#auth-message');
-  const nameField = document.querySelector('#name-field');
   const nameInput = document.querySelector('#auth-name');
   const passwordInput = document.querySelector('#auth-password');
   const submitButton = document.querySelector('#auth-submit');
@@ -51,8 +50,6 @@ export function initializeAccount() {
   function setMode(nextMode) {
     mode = nextMode;
     const registering = mode === 'register';
-    nameField.hidden = !registering;
-    nameInput.required = registering;
     passwordInput.autocomplete = registering ? 'new-password' : 'current-password';
     submitButton.textContent = registering ? 'Criar conta' : 'Entrar';
     loginButton.setAttribute('aria-pressed', String(!registering));
@@ -98,7 +95,7 @@ export function initializeAccount() {
   function openDialog(nextMode) {
     setMode(nextMode);
     dialog.hidden = false;
-    (nextMode === 'register' ? nameInput : document.querySelector('#auth-email')).focus();
+    nameInput.focus();
   }
 
   openButton.addEventListener('click', () => openDialog('login'));
@@ -115,10 +112,9 @@ export function initializeAccount() {
     submitButton.disabled = true;
     message.textContent = 'Aguarde...';
     const body = {
-      email: document.querySelector('#auth-email').value,
+      nome: nameInput.value,
       senha: passwordInput.value,
     };
-    if (mode === 'register') body.nome = nameInput.value;
 
     try {
       const result = await requestApi(mode === 'register' ? '/register' : '/login', {

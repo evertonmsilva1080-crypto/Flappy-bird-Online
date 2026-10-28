@@ -14,19 +14,26 @@ export function createPipes(bird, score, onCollectCoin, onGameOver) {
     skySpriteX: 52,
     pairs: [],
 
-    drawBody(x, y, height, spriteX, sourceY = this.spriteY + this.capHeight) {
+    drawBody(x, y, height, spriteX, sourceY = this.spriteY + this.capHeight, targetContext = context) {
       if (height <= 0) return;
-      context.drawImage(sprites, spriteX, sourceY, this.width,
+      targetContext.drawImage(sprites, spriteX, sourceY, this.width,
         this.height - this.capHeight, x, y, this.width, height);
     },
 
-    drawUpperPipe(x, bottomY) {
+    drawUpperPipe(x, bottomY, targetContext = context, offsetY = 0) {
       const bodyHeight = this.height - this.capHeight;
-      this.drawBody(x, bottomY - this.height, bodyHeight, this.skySpriteX, this.spriteY);
-      context.drawImage(sprites, this.skySpriteX,
+      this.drawBody(x, bottomY - this.height + offsetY, bodyHeight, this.skySpriteX,
+        this.spriteY, targetContext);
+      targetContext.drawImage(sprites, this.skySpriteX,
         this.spriteY + this.height - this.capHeight,
-        this.width, this.capHeight, x, bottomY - this.capHeight,
+        this.width, this.capHeight, x, bottomY - this.capHeight + offsetY,
         this.width, this.capHeight);
+    },
+
+    drawUpperOverflow(targetContext, offsetY) {
+      this.pairs.forEach((pair) => {
+        this.drawUpperPipe(pair.x, pair.passages[0].y, targetContext, offsetY);
+      });
     },
 
     drawLowerPipe(x, topY) {

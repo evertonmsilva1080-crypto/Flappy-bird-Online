@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { collation: nomeCollation } = require('./nomeUsuario');
 
 const usuarioSchema = new mongoose.Schema({
     nome: {
@@ -7,14 +8,6 @@ const usuarioSchema = new mongoose.Schema({
         trim: true,
         minlength: 2,
         maxlength: 60,
-    },
-    email: {
-        type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-        maxlength: 254,
-        unique: true,
     },
     senhaHash: {
         type: String,
@@ -34,6 +27,9 @@ const usuarioSchema = new mongoose.Schema({
 }, {
     timestamps: true,
     versionKey: false,
+    autoIndex: false,
 });
+
+usuarioSchema.index({ nome: 1 }, { unique: true, collation: nomeCollation });
 
 module.exports = mongoose.model('Usuario', usuarioSchema);
