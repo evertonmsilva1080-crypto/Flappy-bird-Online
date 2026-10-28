@@ -1,8 +1,29 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const app = express();
 const port = Number(process.env.PORT) || 8000;
+let conexaoMongo;
+
+async function conectarBanco() {
+    if (!process.env.MONGODB_URI) {
+        throw new Error('Configure MONGODB_URI nas variáveis de ambiente.');
+    }
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+        throw new Error('Configure JWT_SECRET com pelo menos 32 caracteres nas variáveis de ambiente.');
+    }
+    if (mongoose.connection.readyState === 1) return;
+
+    if (!conexaoMongo) {
+        conexaoMongo = mongoose.connect(process.env.MONGODB_URI)
+            .then(() => console.log('Conectado ao MongoDB.'))
+            .finally(() => {
+                conexaoMongo = null;
+            });
+    }
+    await conexaoMongo;
+}
 
 app.disable('x-powered-by');
 app.use('/api', (req, res, next) => {
@@ -12,8 +33,12 @@ app.use('/api', (req, res, next) => {
     next();
 });
 app.use(express.json({ limit: '10kb' }));
+app.use('/api', async (req, res, next) => {
+    await conectarBanco();
+    next();
+});
 app.use('/api/auth', require('./routes/auth'));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/health', (req, res) => {
     res.json({ ok: true, database: mongoose.connection.readyState === 1 });
 });
@@ -31,21 +56,17 @@ app.use((erro, req, res, next) => {
 });
 
 async function iniciarServidor() {
-    if (!process.env.MONGODB_URI) {
-        throw new Error('Configure MONGODB_URI no arquivo .env antes de iniciar.');
-    }
-    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-        throw new Error('Configure JWT_SECRET com pelo menos 32 caracteres no arquivo .env.');
-    }
-
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Conectado ao MongoDB.');
+    await conectarBanco();
     app.listen(port, () => {
         console.log('Flappy Bird disponível em http://localhost:' + port);
     });
 }
 
-iniciarServidor().catch((erro) => {
-    console.error('Não foi possível iniciar o servidor:', erro.message);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    iniciarServidor().catch((erro) => {
+        console.error('Não foi possível iniciar o servidor:', erro.message);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = app;

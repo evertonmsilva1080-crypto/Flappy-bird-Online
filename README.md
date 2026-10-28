@@ -27,10 +27,21 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida. Requer `Authorization: Bearer <token>`.
 
 ## Estrutura do jogo
-- script.js inicializa os módulos.
-- game/main.js controla o ciclo e as telas da partida.
-- game/bird.js, game/pipes.js, game/ground.js e game/score.js contêm entidades e regras.
-- game/assets.js e game/background.js cuidam de recursos visuais e sons.
-- game/account.js cuida de cadastro, login e gravação dos resultados.
+- public/script.js inicializa os módulos.
+- public/game/main.js controla o ciclo e as telas da partida.
+- public/game/bird.js, public/game/pipes.js, public/game/ground.js e public/game/score.js contêm entidades e regras.
+- public/game/assets.js e public/game/background.js cuidam de recursos visuais e sons.
+- public/game/account.js cuida de cadastro, login e gravação dos resultados.
 
 O canvas mantém a proporção do jogo e se ajusta à tela. Celulares usam toque; teclado continua disponível em computadores.
+
+## Deploy na Vercel
+
+O front-end está em `public/`, que a Vercel publica como arquivos estáticos. O `server.js` exporta a aplicação Express e também continua iniciando o servidor normalmente com `npm start` para desenvolvimento local. Na Vercel, a aplicação é executada como função; não há um servidor persistente.
+
+1. Envie o repositório ao GitHub e importe-o em [vercel.com/new](https://vercel.com/new). Mantenha a raiz do projeto como diretório raiz; a Vercel detecta o Express automaticamente.
+2. Em **Settings → Environment Variables**, configure `MONGODB_URI` com a URI do MongoDB Atlas e `JWT_SECRET` com uma chave aleatória de pelo menos 32 caracteres. Selecione os ambientes necessários, incluindo Production.
+3. Configure no Atlas o acesso de rede apropriado para sua implantação. Não publique a URI nem a chave no repositório; `.env` e `.env.*` são ignorados pelo Git, com exceção do `.env.example`.
+4. Faça o deploy (ou um novo deploy após alterar variáveis) e confira a página inicial e `/api/health`.
+
+As conexões ao MongoDB são abertas sob demanda para as rotas da API e reutilizadas enquanto a instância da função estiver ativa. WebSockets, processos persistentes e tarefas contínuas precisam de uma hospedagem que mantenha o processo em execução.
