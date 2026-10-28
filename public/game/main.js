@@ -16,6 +16,7 @@ import {
   drawGameOverMedal,
   drawGameOverMessage,
   drawGameOverStats,
+  drawPauseMenu,
   drawReadyMessage,
 } from './background.js';
 import { saveGameResult } from './account.js';
@@ -25,7 +26,6 @@ let screen = 'start';
 let session;
 const pauseButton = document.querySelector('#pause-toggle');
 const pauseOverlay = document.querySelector('#pause-overlay');
-const resumeButton = document.querySelector('#resume-game');
 const bottomNav = document.querySelector('.bottom-nav');
 const homeButton = document.querySelector('#home-open');
 const mapToggleButton = document.querySelector('#map-toggle');
@@ -108,7 +108,11 @@ function render() {
     session.pipes.draw(frames, selectedMap);
     session.ground.draw(selectedMap);
     session.bird.draw();
-    session.score.draw(session.coins, getScoreHudTop());
+    if (screen === 'playing') {
+      session.score.draw(session.coins, getScoreHudTop());
+    } else {
+      drawPauseMenu(session.score.value, session.coins);
+    }
   } else if (screen === 'gameOver') {
     drawGameOver();
   }
@@ -152,7 +156,7 @@ function update() {
 function loop() {
   render();
   update();
-  frames += 1;
+  if (screen !== 'paused') frames += 1;
   requestAnimationFrame(loop);
 }
 
@@ -169,6 +173,13 @@ function handleGameInput() {
     screen = 'start';
     updatePauseControls();
   }
+}
+
+function resumeGame() {
+  if (screen !== 'paused') return;
+  screen = 'playing';
+  updatePauseControls();
+  pauseButton.focus();
 }
 
 export async function startGame() {
@@ -211,15 +222,10 @@ export async function startGame() {
     if (screen !== 'playing') return;
     screen = 'paused';
     updatePauseControls();
-    resumeButton.focus();
+    pauseOverlay.focus();
   });
 
-  resumeButton.addEventListener('click', () => {
-    if (screen !== 'paused') return;
-    screen = 'playing';
-    updatePauseControls();
-    pauseButton.focus();
-  });
+  pauseOverlay.addEventListener('click', resumeGame);
 
   mapToggleButton.addEventListener('click', () => {
     if (screen === 'playing' || screen === 'paused') return;
@@ -242,7 +248,11 @@ export async function startGame() {
     }
     if (event.code === 'Space' || event.code === 'ArrowUp') {
       event.preventDefault();
-      if (screen === 'playing') handleGameInput();
+      if (screen === 'paused') {
+        resumeGame();
+      } else if (screen === 'playing') {
+        handleGameInput();
+      }
     }
   });
 }

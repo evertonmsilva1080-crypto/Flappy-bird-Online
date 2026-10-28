@@ -8,12 +8,10 @@ export function createScore() {
     },
     draw(coinsThisRound, hudTop) {
       const coinSize = 22;
+      const scoreTop = hudTop + coinSize + 4;
       const counterText = '$' + String(coinsThisRound).padStart(4, '0');
+      const scoreText = String(this.value).padStart(4, '0');
       context.textAlign = 'left';
-      context.fillStyle = '#fff';
-      context.font = '35px VT323, monospace';
-      context.fillText(String(this.value).padStart(4, '0'), 10, hudTop + 62);
-
       context.textBaseline = 'middle';
       context.fillStyle = '#fff3a8';
       context.font = 'bold 16px "Courier New", Courier, monospace';
@@ -23,6 +21,8 @@ export function createScore() {
       context.drawImage(sprites, 56, 8, 30, 30,
         10, hudTop, coinSize, coinSize);
       context.fillText(counterText, 10 + coinSize + 4, hudTop + coinSize / 2);
+      context.drawImage(sprites, 63, 37, 24, 21, 10, scoreTop, coinSize, coinSize);
+      context.fillText(scoreText, 10 + coinSize + 4, scoreTop + coinSize / 2);
       context.shadowColor = 'transparent';
       context.shadowOffsetX = 0;
       context.shadowOffsetY = 0;

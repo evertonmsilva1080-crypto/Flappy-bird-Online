@@ -39,6 +39,14 @@ Na primeira inicialização após a mudança para login por nome, o servidor rem
 - public/game/account.js cuida de cadastro, login e gravação dos resultados.
 - public/game/ranking.js carrega e exibe o ranking público de jogadores.
 
+## Estrutura do servidor
+- server.js configura o Express, registra as rotas e inicia o servidor local.
+- config/database.js gerencia a conexão ao MongoDB e executa a migração de índices.
+- routes/ contém endpoints separados para autenticação, ranking e mapas.
+- models/ define o esquema do usuário e regras compartilhadas para nomes.
+- migrations/ guarda migrações de banco que podem ser executadas na inicialização.
+- middleware/ contém etapas reutilizáveis do ciclo de requisição, como a preparação do banco.
+
 O canvas mantém a proporção do jogo e se ajusta à tela. Celulares usam toque; teclado continua disponível em computadores.
 
 ## Adicionar mapas

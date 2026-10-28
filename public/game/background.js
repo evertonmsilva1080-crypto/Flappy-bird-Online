@@ -24,6 +24,38 @@ export function drawGameOverMessage() {
     (canvas.width - 226) / 2, 50, 226, 200);
 }
 
+export function drawPauseMenu(score, coins) {
+  const menu = { x: 409, y: 222, width: 233, height: 203 };
+  const targetX = (canvas.width - menu.width) / 2;
+  const targetY = 50;
+
+  context.drawImage(
+    sprites,
+    menu.x,
+    menu.y,
+    menu.width,
+    menu.height,
+    targetX,
+    targetY,
+    menu.width,
+    menu.height,
+  );
+
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillStyle = '#c65300';
+  context.font = 'bold 12px "Courier New", Courier, monospace';
+  context.shadowColor = '#fff3a8';
+  context.shadowOffsetX = 1;
+  context.shadowOffsetY = 1;
+  context.fillText(String(score).padStart(4, '0'), targetX + 177, targetY + 87);
+  context.fillText(String(coins).padStart(4, '0'), targetX + 177, targetY + 126);
+  context.shadowColor = 'transparent';
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 0;
+  context.textBaseline = 'alphabetic';
+}
+
 export function drawGameOverStats(score, coins) {
   const scoreText = String(score).padStart(4, '0');
   const coinsText = String(coins).padStart(4, '0');

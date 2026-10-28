@@ -42,7 +42,7 @@ export async function loadMaps() {
     }
     loadedMaps.set(map.id, image);
     backgroundColors.set(map.id, getSpriteColor(image, 390, 0));
-    groundColors.set(map.id, getSpriteColor(image, 100, 615));
+    groundColors.set(map.id, getSpriteColor(image, 100, 635));
   }));
 
   return maps;
@@ -71,7 +71,7 @@ export function getMapBackgroundColor(map) {
 
 export function getMapGroundColor(map) {
   if (!groundColors.has(map)) {
-    groundColors.set(map, getSpriteColor(getMapSprites(map), 100, 615));
+    groundColors.set(map, getSpriteColor(getMapSprites(map), 100, 635));
   }
   return groundColors.get(map);
 }

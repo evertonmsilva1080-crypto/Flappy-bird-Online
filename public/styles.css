@@ -40,6 +40,7 @@ button:disabled {
   position: fixed;
   inset: 0 0 auto;
   z-index: 1;
+  pointer-events: none;
   display: flex;
   min-height: 52px;
   flex-wrap: wrap;
@@ -171,18 +172,12 @@ button:disabled {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(10 30 35 / 48%);
+  background: transparent;
+  cursor: pointer;
 }
 
 .pause-overlay[hidden] {
   display: none;
-}
-
-.pause-overlay button {
-  min-width: 150px;
-  background: #188e9e;
-  color: #fff;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 25%);
 }
 
 /* Account dialog */
