@@ -16,9 +16,10 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 ## Funcionalidades
 - Cadastro e login de usuários.
 - Cada usuário tem um ID do MongoDB, recorde pessoal e saldo de moedas.
+- As moedas podem ser usadas para comprar skins; skins compradas e a skin equipada ficam salvas na conta.
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
-- A barra de navegação oferece atalhos para a tela inicial, o ranking e o perfil, além de alternar automaticamente entre todos os mapas PNG encontrados em `public/maps/`.
+- A barra de navegação oferece atalhos para a tela inicial, o ranking e a Loja, além de alternar entre os mapas PNG encontrados em `public/maps/`. A Loja organiza as opções de skins, acessórios e efeitos; o perfil é acessado pelo ícone de pessoa no canto superior direito.
 - Ao terminar a partida, a API salva o recorde usando o maior valor e soma as moedas coletadas na conta autenticada.
 - Para contas autenticadas, a tela de fim de jogo exibe uma medalha conforme a posição do recorde no ranking: dourada para 1º lugar, laranja para 2º, prata para 3º e branca para as posições seguintes com mais de um ponto.
 
@@ -26,6 +27,9 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - `POST /api/auth/register`: recebe `nome` e `senha`. O nome deve ser único, sem diferenciar maiúsculas de minúsculas.
 - `POST /api/auth/login`: recebe `nome` e `senha`.
 - `GET /api/auth/me`: retorna os dados da conta atual.
+- `GET /api/auth/skins`: retorna o catálogo de skins e seus preços.
+- `POST /api/auth/skins/purchase`: recebe `skinId`, desconta o preço do saldo e registra a skin na conta autenticada.
+- `POST /api/auth/skins/equip`: recebe `skinId` e salva a skin equipada na conta autenticada.
 - `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida e retorna `posicaoRanking` do recorde atualizado. Requer `Authorization: Bearer <token>`.
 - `GET /api/ranking`: retorna o nome e o recorde de todos os usuários, ordenados da maior para a menor pontuação.
 
@@ -36,6 +40,7 @@ Na primeira inicialização após a mudança para login por nome, o servidor rem
 - public/game/main.js controla o ciclo e as telas da partida.
 - public/game/bird.js, public/game/pipes.js, public/game/ground.js e public/game/score.js contêm entidades e regras.
 - public/game/assets.js e public/game/background.js cuidam de recursos visuais e sons.
+- public/game/skins.js recorta e exibe as skins da folha de sprites.
 - public/game/account.js cuida de cadastro, login e gravação dos resultados.
 - public/game/ranking.js carrega e exibe o ranking público de jogadores.
 

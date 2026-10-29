@@ -1,4 +1,5 @@
 import { context, sprites, playJumpSound } from './assets.js';
+import { drawSkinFrame, getEquippedSkin } from './skins.js';
 
 export function createBird(ground, onFall, onGameOver) {
   return {
@@ -28,6 +29,12 @@ export function createBird(ground, onFall, onGameOver) {
     },
     draw() {
       const spriteY = [0, 26, 52, 26][this.frame];
+      const skinId = getEquippedSkin();
+      const skinFrame = [0, 1, 2, 1][this.frame];
+      if (skinId !== 'classic' &&
+          drawSkinFrame(context, skinId, skinFrame, this.x, this.y, this.width, this.height)) {
+        return;
+      }
       context.drawImage(sprites, this.spriteX, spriteY, this.width, this.height,
         this.x, this.y, this.width, this.height);
     },

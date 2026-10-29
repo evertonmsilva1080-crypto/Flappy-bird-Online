@@ -1,3 +1,5 @@
+import { setEquippedSkin } from './skins.js';
+
 export async function saveGameResult({ score, coins }) {
   const token = localStorage.getItem('flappy-token');
   if (!token) return null;
@@ -46,6 +48,7 @@ export function initializeAccount() {
 
   function updateAccount(user) {
     currentUser = user;
+    setEquippedSkin(user?.skinEquipped || 'classic');
     accountName.textContent = user ? 'Olá, ' + user.nome : '';
     accountName.title = user ? 'ID: ' + user.id : '';
     const stats = user
@@ -149,6 +152,7 @@ export function initializeAccount() {
       });
       localStorage.setItem('flappy-token', result.token);
       updateAccount(result.usuario);
+      window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: result.usuario }));
       form.reset();
       dialog.hidden = true;
     } catch (error) {
@@ -161,6 +165,7 @@ export function initializeAccount() {
   logoutButton.addEventListener('click', () => {
     localStorage.removeItem('flappy-token');
     updateAccount(null);
+    window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: null }));
     dialog.hidden = true;
     openButton.focus();
   });
@@ -168,7 +173,10 @@ export function initializeAccount() {
   const token = localStorage.getItem('flappy-token');
   if (token) {
     requestApi('/me', { headers: { Authorization: 'Bearer ' + token } })
-      .then((result) => updateAccount(result.usuario))
+      .then((result) => {
+        updateAccount(result.usuario);
+        window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: result.usuario }));
+      })
       .catch(() => {
         localStorage.removeItem('flappy-token');
         updateAccount(null);

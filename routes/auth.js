@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const { collation: nomeCollation } = require('../models/nomeUsuario');
+const { findSkin, skinCatalog } = require('../config/skins');
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ function dadosPublicos(usuario) {
         nome: usuario.nome,
         pontuacaoMaxima: usuario.pontuacaoMaxima || 0,
         moedas: usuario.moedas || 0,
+        skins: Array.isArray(usuario.skins) ? usuario.skins : ['classic'],
+        skinEquipped: usuario.skinEquipped || 'classic',
     };
 }
 
@@ -99,6 +102,73 @@ router.get('/me', autenticar, async (req, res) => {
     } catch (erro) {
         console.error('Erro ao consultar usuário:', erro);
         return res.status(500).json({ message: 'Não foi possível consultar a conta.' });
+    }
+});
+
+router.get('/skins', (req, res) => {
+    return res.json({ skins: skinCatalog });
+});
+
+router.post('/skins/purchase', autenticar, async (req, res) => {
+    const skin = findSkin(req.body?.skinId);
+    if (!skin) {
+        return res.status(400).json({ message: 'Skin inválida.' });
+    }
+
+    try {
+        const usuario = await Usuario.findOneAndUpdate(
+            {
+                _id: req.usuarioId,
+                moedas: { $gte: skin.price },
+                skins: { $ne: skin.id },
+            },
+            {
+                $inc: { moedas: -skin.price },
+                $addToSet: { skins: { $each: ['classic', skin.id] } },
+            },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        if (conta.skins?.includes(skin.id)) {
+            return res.status(409).json({ message: 'Você já possui esta skin.' });
+        }
+        return res.status(400).json({ message: 'Moedas insuficientes para comprar esta skin.' });
+    } catch (erro) {
+        console.error('Erro ao comprar skin:', erro);
+        return res.status(500).json({ message: 'Não foi possível comprar a skin.' });
+    }
+});
+
+router.post('/skins/equip', autenticar, async (req, res) => {
+    const skinId = req.body?.skinId;
+    const skin = skinId === 'classic' ? { id: 'classic' } : findSkin(skinId);
+    if (!skin) {
+        return res.status(400).json({ message: 'Skin inválida.' });
+    }
+
+    try {
+        const filter = { _id: req.usuarioId };
+        if (skin.id !== 'classic') filter.skins = skin.id;
+
+        const usuario = await Usuario.findOneAndUpdate(
+            filter,
+            {
+                $set: { skinEquipped: skin.id },
+                $addToSet: { skins: 'classic' },
+            },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        return res.status(403).json({ message: 'Compre esta skin antes de equipá-la.' });
+    } catch (erro) {
+        console.error('Erro ao equipar skin:', erro);
+        return res.status(500).json({ message: 'Não foi possível equipar a skin.' });
     }
 });
 

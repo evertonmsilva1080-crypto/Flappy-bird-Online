@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { collation: nomeCollation } = require('./nomeUsuario');
+const { skinCatalog } = require('../config/skins');
 
 const usuarioSchema = new mongoose.Schema({
     nome: {
@@ -23,6 +24,16 @@ const usuarioSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         min: 0,
+    },
+    skins: {
+        type: [String],
+        enum: ['classic', ...skinCatalog.map((skin) => skin.id)],
+        default: ['classic'],
+    },
+    skinEquipped: {
+        type: String,
+        enum: ['classic', ...skinCatalog.map((skin) => skin.id)],
+        default: 'classic',
     },
 }, {
     timestamps: true,

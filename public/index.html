@@ -26,6 +26,18 @@
         >
           <span class="pause-icon" aria-hidden="true"><i></i><i></i></span>
         </button>
+        <button
+          class="profile-toggle"
+          id="account-open"
+          type="button"
+          aria-label="Abrir perfil"
+          title="Perfil"
+        >
+          <svg class="profile-icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14M5 29v-5a11 11 0 0 1 22 0v5z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+            <path d="M9 25h14" stroke="#fff0b0" stroke-width="2"/>
+          </svg>
+        </button>
       </div>
     </main>
 
@@ -67,6 +79,87 @@
         <p class="ranking-message" id="ranking-message" role="status" aria-live="polite">
           Carregando ranking...
         </p>
+      </section>
+    </div>
+
+    <div class="store-dialog" id="store-dialog" hidden>
+      <section class="store-card" role="dialog" aria-modal="true" aria-labelledby="store-title">
+        <button
+          class="ranking-close store-close"
+          id="store-close"
+          type="button"
+          aria-label="Fechar loja"
+        >×</button>
+        <h1 class="store-title" id="store-title">Loja</h1>
+        <div class="store-tabs" role="tablist" aria-label="Categorias da loja">
+          <button
+            class="store-tab"
+            id="store-tab-skins"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="store-panel-skins"
+            tabindex="0"
+          >Skins</button>
+          <button
+            class="store-tab"
+            id="store-tab-accessories"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="store-panel-accessories"
+            tabindex="-1"
+          >Acessórios</button>
+          <button
+            class="store-tab"
+            id="store-tab-effects"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="store-panel-effects"
+            tabindex="-1"
+          >Efeitos</button>
+        </div>
+        <div class="store-panels">
+          <section
+            class="store-panel"
+            id="store-panel-skins"
+            role="tabpanel"
+            aria-labelledby="store-tab-skins"
+            tabindex="0"
+          >
+            <h2>Skins</h2>
+            <p class="store-wallet" id="store-wallet"></p>
+            <p class="store-message" id="store-message" role="status" aria-live="polite">
+              Carregando skins...
+            </p>
+            <div class="store-skin-grid" id="store-skin-grid"></div>
+          </section>
+          <section
+            class="store-panel"
+            id="store-panel-accessories"
+            role="tabpanel"
+            aria-labelledby="store-tab-accessories"
+            tabindex="0"
+            hidden
+          >
+            <h2>Acessórios</h2>
+            <p>Adicione acessórios para personalizar seu pássaro.</p>
+            <span class="store-coming-soon">Itens em breve</span>
+          </section>
+          <section
+            class="store-panel"
+            id="store-panel-effects"
+            role="tabpanel"
+            aria-labelledby="store-tab-effects"
+            tabindex="0"
+            hidden
+          >
+            <h2>Efeitos</h2>
+            <p>Escolha efeitos especiais para suas partidas.</p>
+            <span class="store-coming-soon">Itens em breve</span>
+          </section>
+        </div>
       </section>
     </div>
 
@@ -155,12 +248,13 @@
         <span id="map-name">Mapa 1</span>
       </button>
       <span class="bottom-nav-divider" aria-hidden="true"></span>
-      <button class="bottom-nav-item" id="account-open" type="button">
+      <button class="bottom-nav-item" id="store-open" type="button">
         <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
-          <path d="M16 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14M5 29v-5a11 11 0 0 1 22 0v5z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
-          <path d="M9 25h14" stroke="#fff0b0" stroke-width="2"/>
+          <path d="M5 12h22l-2-8H7z" fill="#edb34e" stroke="#32170f" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M7 12v16h18V12M13 28v-9h6v9" fill="#ae5927" stroke="#32170f" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M5 12a4 4 0 0 0 8 0 4 4 0 0 0 8 0 4 4 0 0 0 8 0" fill="#f2c56f" stroke="#32170f" stroke-width="2"/>
         </svg>
-        <span>Perfil</span>
+        <span>Loja</span>
       </button>
     </nav>
 

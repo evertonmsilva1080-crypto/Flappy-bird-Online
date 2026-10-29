@@ -25,6 +25,7 @@ let frames = 0;
 let screen = 'start';
 let session;
 const pauseButton = document.querySelector('#pause-toggle');
+const profileButton = document.querySelector('#account-open');
 const pauseOverlay = document.querySelector('#pause-overlay');
 const bottomNav = document.querySelector('.bottom-nav');
 const homeButton = document.querySelector('#home-open');
@@ -47,6 +48,7 @@ function updateMapSelection() {
 
 function updatePauseControls() {
   pauseButton.hidden = screen !== 'playing';
+  profileButton.hidden = screen === 'playing' || screen === 'paused';
   pauseOverlay.hidden = screen !== 'paused';
   bottomNav.hidden = screen === 'playing' || screen === 'paused';
 }
