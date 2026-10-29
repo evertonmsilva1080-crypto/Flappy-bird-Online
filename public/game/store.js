@@ -4,6 +4,7 @@ import {
   getAccessory,
   loadAccessorySheet,
 } from './accessories.js';
+import { drawTrailPreview } from './particles.js';
 
 export function initializeStore() {
   const dialog = document.querySelector('#store-dialog');
@@ -17,11 +18,16 @@ export function initializeStore() {
   const accessoryWallet = document.querySelector('#accessory-wallet');
   const accessoryMessage = document.querySelector('#accessory-message');
   const accessoryGrid = document.querySelector('#store-accessory-grid');
+  const effectWallet = document.querySelector('#effect-wallet');
+  const effectMessage = document.querySelector('#effect-message');
+  const effectGrid = document.querySelector('#store-effect-grid');
   let catalog = [];
   let accessories = [];
+  let effects = [];
   let currentUser = null;
   let catalogPromise;
   let accessoryCatalogPromise;
+  let effectCatalogPromise;
 
   function closeDialog() {
     dialog.hidden = true;
@@ -38,6 +44,10 @@ export function initializeStore() {
     if (selectedTab.id === 'store-tab-accessories') {
       loadAccessoryCatalog().catch((error) =>
         console.error('Falha ao carregar os acessórios:', error));
+    }
+    if (selectedTab.id === 'store-tab-effects') {
+      loadEffectCatalog().catch((error) =>
+        console.error('Falha ao carregar os efeitos:', error));
     }
   }
 
@@ -82,6 +92,85 @@ export function initializeStore() {
       : 'Entre na sua conta para comprar itens.';
     wallet.textContent = balance;
     accessoryWallet.textContent = balance;
+    effectWallet.textContent = balance;
+  }
+
+  async function purchaseOrEquipEffect(effect, button) {
+    if (!currentUser) {
+      effectMessage.textContent = 'Entre na sua conta para desbloquear efeitos.';
+      accountButton.click();
+      return;
+    }
+
+    const isOwned = effect.price === 0 || (currentUser.effects || []).includes(effect.id);
+    const isEquipped = (currentUser.effectEquipped || 'effect-white') === effect.id;
+    if (isEquipped) return;
+
+    button.disabled = true;
+    effectMessage.textContent = isOwned
+      ? 'Equipando ' + effect.name + '...'
+      : 'Desbloqueando ' + effect.name + '...';
+    try {
+      const result = await requestApi(
+        isOwned ? '/effects/equip' : '/effects/purchase',
+        { effectId: effect.id },
+      );
+      currentUser = result.usuario;
+      window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: currentUser }));
+      renderEffects();
+      effectMessage.textContent = isOwned
+        ? effect.name + ' equipado.'
+        : effect.name + ' desbloqueado. Agora você pode equipá-lo.';
+    } catch (error) {
+      effectMessage.textContent = error.message;
+      button.disabled = false;
+    }
+  }
+
+  function renderEffects() {
+    updateWallet();
+    effectGrid.replaceChildren();
+
+    effects.forEach((effect) => {
+      const owned = effect.price === 0 || (currentUser?.effects || []).includes(effect.id);
+      const equipped = (currentUser?.effectEquipped || 'effect-white') === effect.id;
+      const card = document.createElement('article');
+      card.className = 'store-skin-card';
+
+      const preview = document.createElement('canvas');
+      preview.className = 'store-skin-preview store-effect-preview';
+      preview.width = 66;
+      preview.height = 48;
+      drawTrailPreview(preview.getContext('2d'), effect);
+
+      const name = document.createElement('h3');
+      name.className = 'store-skin-name';
+      name.textContent = effect.name;
+
+      const price = document.createElement('p');
+      price.className = 'store-skin-price';
+      price.textContent = effect.price === 0
+        ? 'Grátis'
+        : owned
+          ? 'Desbloqueado'
+          : effect.price + ' moedas';
+
+      const action = document.createElement('button');
+      action.className = 'store-skin-action';
+      action.type = 'button';
+      action.textContent = equipped
+        ? 'Equipado'
+        : owned
+          ? 'Equipar'
+          : currentUser
+            ? 'Comprar'
+            : 'Entrar';
+      action.disabled = equipped;
+      action.addEventListener('click', () => purchaseOrEquipEffect(effect, action));
+
+      card.append(preview, name, price, action);
+      effectGrid.append(card);
+    });
   }
 
   function drawAccessoryPreview(canvas, accessory) {
@@ -301,6 +390,26 @@ export function initializeStore() {
     return accessoryCatalogPromise;
   }
 
+  function loadEffectCatalog() {
+    if (!effectCatalogPromise) {
+      effectCatalogPromise = requestApi('/effects')
+        .then((result) => {
+          if (!Array.isArray(result.effects)) {
+            throw new Error('A API retornou um catálogo de efeitos inválido.');
+          }
+          effects = result.effects;
+          renderEffects();
+          effectMessage.textContent = effects.length + ' efeitos disponíveis.';
+        })
+        .catch((error) => {
+          effectCatalogPromise = null;
+          effectMessage.textContent = error.message;
+          throw error;
+        });
+    }
+    return effectCatalogPromise;
+  }
+
   openButton.addEventListener('click', () => {
     dialog.hidden = false;
     closeButton.focus();
@@ -337,6 +446,7 @@ export function initializeStore() {
     currentUser = event.detail;
     renderSkins();
     renderAccessories();
+    renderEffects();
   });
   updateWallet();
 }

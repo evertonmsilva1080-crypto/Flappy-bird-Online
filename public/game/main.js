@@ -8,6 +8,7 @@ import {
   playFallSound,
 } from './assets.js';
 import { createBird } from './bird.js';
+import { createBirdTrail } from './particles.js';
 import { createGround } from './ground.js';
 import { createPipes } from './pipes.js';
 import { createScore } from './score.js';
@@ -24,9 +25,19 @@ import { saveGameResult } from './account.js';
 let frames = 0;
 let screen = 'start';
 let session;
+const GAME_SPEED = 0.9;
+const SIMULATION_STEP = 1000 / 60;
+let simulationAccumulator = 0;
+let lastFrameTimestamp;
 const pauseButton = document.querySelector('#pause-toggle');
 const profileButton = document.querySelector('#account-open');
+const accountBar = document.querySelector('.account-bar');
+const gameHud = document.querySelector('#game-hud');
+const gameCoins = document.querySelector('#game-coins');
+const gameScore = document.querySelector('#game-score');
 const pauseOverlay = document.querySelector('#pause-overlay');
+const pauseMessage = document.querySelector('#pause-message');
+const pauseCountdown = document.querySelector('#pause-countdown');
 const bottomNav = document.querySelector('.bottom-nav');
 const homeButton = document.querySelector('#home-open');
 const mapToggleButton = document.querySelector('#map-toggle');
@@ -35,6 +46,8 @@ const pipeExtension = document.querySelector('#pipe-extension');
 const pipeExtensionContext = pipeExtension.getContext('2d');
 let maps = [{ id: 'classic', name: 'Clássico' }];
 let selectedMap = 'classic';
+let pauseInputLockedUntil = 0;
+let resumeCountdownEndsAt = 0;
 
 function updateMapSelection() {
   const mapIndex = maps.findIndex((map) => map.id === selectedMap);
@@ -48,7 +61,8 @@ function updateMapSelection() {
 
 function updatePauseControls() {
   pauseButton.hidden = screen !== 'playing';
-  profileButton.hidden = screen === 'playing' || screen === 'paused';
+  accountBar.hidden = screen === 'playing' || screen === 'paused';
+  gameHud.hidden = screen !== 'playing' && screen !== 'paused';
   pauseOverlay.hidden = screen !== 'paused';
   bottomNav.hidden = screen === 'playing' || screen === 'paused';
 }
@@ -59,6 +73,7 @@ function createSession() {
   const state = {
     ground,
     score,
+    trail: createBirdTrail(),
     coins: 0,
     rankingPosition: null,
     finished: false,
@@ -79,6 +94,7 @@ function createSession() {
 function finishGame() {
   if (!session || session.finished) return;
   session.finished = true;
+  session.trail.clear();
   screen = 'gameOver';
   updatePauseControls();
   const finishedSession = session;
@@ -101,6 +117,9 @@ function drawGameOver() {
 
 function render() {
   drawBackground(selectedMap);
+  gameCoins.textContent = String(session.coins).padStart(4, '0');
+  gameScore.textContent = String(session.score.value).padStart(4, '0');
+  updatePausePrompt();
 
   if (screen === 'start') {
     session.ground.draw(selectedMap);
@@ -109,23 +128,50 @@ function render() {
   } else if (screen === 'playing' || screen === 'paused') {
     session.pipes.draw(frames, selectedMap);
     session.ground.draw(selectedMap);
+    if (screen === 'playing') session.trail.draw();
     session.bird.draw();
-    if (screen === 'playing') {
-      session.score.draw(session.coins, getScoreHudTop());
-    } else {
+    if (screen === 'paused' && !resumeCountdownEndsAt) {
       drawPauseMenu(session.score.value, session.coins);
     }
   } else if (screen === 'gameOver') {
     drawGameOver();
   }
 
-  drawPipeExtension();
-}
+  function updatePausePrompt() {
+    if (screen !== 'paused') {
+      pauseOverlay.classList.remove('is-input-locked');
+      pauseOverlay.classList.remove('is-countdown');
+      pauseOverlay.setAttribute(
+        'aria-label',
+        'Jogo pausado. Toque em qualquer lugar para continuar.',
+      );
+      pauseMessage.hidden = false;
+      pauseCountdown.hidden = true;
+      return;
+    }
 
-function getScoreHudTop() {
-  const scale = canvas.getBoundingClientRect().width / canvas.width;
-  const pauseTop = Number.parseFloat(getComputedStyle(pauseButton).top);
-  return (pauseTop + 40 + 6) / scale;
+    const now = Date.now();
+    const isCountingDown = resumeCountdownEndsAt > 0;
+    const isInputLocked = !isCountingDown && now < pauseInputLockedUntil;
+    pauseOverlay.classList.toggle('is-input-locked', isInputLocked);
+    pauseOverlay.classList.toggle('is-countdown', isCountingDown);
+    pauseOverlay.setAttribute(
+      'aria-label',
+      isCountingDown
+        ? 'O jogo voltará em ' + Math.max(1, Math.ceil((resumeCountdownEndsAt - now) / 1000)) + ' segundos.'
+        : isInputLocked ? 'Jogo pausado. Aguarde para continuar.' : 'Jogo pausado. Toque em qualquer lugar para continuar.',
+    );
+    pauseMessage.hidden = isCountingDown;
+    pauseCountdown.hidden = !isCountingDown;
+
+    if (isCountingDown) {
+      pauseCountdown.textContent = String(Math.max(1, Math.ceil((resumeCountdownEndsAt - now) / 1000)));
+    } else {
+      pauseMessage.textContent = isInputLocked ? 'Pausa ativada' : 'Toque para continuar';
+    }
+  }
+
+  drawPipeExtension();
 }
 
 function drawPipeExtension() {
@@ -155,10 +201,30 @@ function update() {
   }
 }
 
-function loop() {
+function loop(timestamp = performance.now()) {
+  if (screen === 'paused' && resumeCountdownEndsAt && Date.now() >= resumeCountdownEndsAt) {
+    screen = 'playing';
+    resumeCountdownEndsAt = 0;
+    pauseInputLockedUntil = 0;
+    updatePauseControls();
+    pauseButton.focus();
+  }
+  const elapsed = lastFrameTimestamp === undefined
+    ? 0
+    : Math.min(timestamp - lastFrameTimestamp, 100);
+  lastFrameTimestamp = timestamp;
+
+  if (screen !== 'paused') {
+    simulationAccumulator += elapsed * GAME_SPEED;
+    while (simulationAccumulator >= SIMULATION_STEP) {
+      update();
+      frames += 1;
+      simulationAccumulator -= SIMULATION_STEP;
+    }
+    if (screen === 'playing') session.trail.update(elapsed, session.bird);
+  }
+
   render();
-  update();
-  if (screen !== 'paused') frames += 1;
   requestAnimationFrame(loop);
 }
 
@@ -177,11 +243,21 @@ function handleGameInput() {
   }
 }
 
-function resumeGame() {
-  if (screen !== 'paused') return;
-  screen = 'playing';
+function pauseGame() {
+  if (screen !== 'playing') return;
+  session.trail.clear();
+  screen = 'paused';
+  pauseInputLockedUntil = Date.now() + 2000;
+  resumeCountdownEndsAt = 0;
   updatePauseControls();
-  pauseButton.focus();
+  pauseOverlay.focus();
+}
+
+function resumeGame() {
+  if (screen !== 'paused' ||
+      Date.now() < pauseInputLockedUntil ||
+      resumeCountdownEndsAt > 0) return;
+  resumeCountdownEndsAt = Date.now() + 3000;
 }
 
 export async function startGame() {
@@ -221,10 +297,11 @@ export async function startGame() {
   });
 
   pauseButton.addEventListener('click', () => {
-    if (screen !== 'playing') return;
-    screen = 'paused';
-    updatePauseControls();
-    pauseOverlay.focus();
+    pauseGame();
+  });
+
+  profileButton.addEventListener('click', () => {
+    pauseGame();
   });
 
   pauseOverlay.addEventListener('click', resumeGame);

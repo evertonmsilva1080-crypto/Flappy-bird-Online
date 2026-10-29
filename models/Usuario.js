@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { collation: nomeCollation } = require('./nomeUsuario');
 const { skinCatalog } = require('../config/skins');
 const { accessoryCatalog } = require('../config/accessories');
+const { effectCatalog } = require('../config/effects');
 
 const usuarioSchema = new mongoose.Schema({
     nome: {
@@ -9,7 +10,7 @@ const usuarioSchema = new mongoose.Schema({
         required: true,
         trim: true,
         minlength: 2,
-        maxlength: 60,
+        maxlength: 15,
     },
     senhaHash: {
         type: String,
@@ -45,6 +46,16 @@ const usuarioSchema = new mongoose.Schema({
         type: String,
         enum: ['none', ...accessoryCatalog.map((accessory) => accessory.id)],
         default: 'none',
+    },
+    effects: {
+        type: [String],
+        enum: effectCatalog.map((effect) => effect.id),
+        default: ['effect-white'],
+    },
+    effectEquipped: {
+        type: String,
+        enum: effectCatalog.map((effect) => effect.id),
+        default: 'effect-white',
     },
 }, {
     timestamps: true,

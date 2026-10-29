@@ -54,6 +54,11 @@ button:disabled {
     max(14px, env(safe-area-inset-left));
 }
 
+.account-bar[hidden],
+.game-hud[hidden] {
+  display: none;
+}
+
 .account-name {
   max-width: 210px;
   overflow: hidden;
@@ -123,8 +128,8 @@ button:disabled {
 
 .pause-toggle,
 .profile-toggle {
-  position: absolute;
-  z-index: 2;
+  position: fixed;
+  z-index: 4;
   top: max(12px, env(safe-area-inset-top));
   display: grid;
   width: 40px;
@@ -144,6 +149,46 @@ button:disabled {
 
 .profile-toggle {
   right: max(12px, env(safe-area-inset-right));
+}
+
+.game-hud {
+  position: fixed;
+  z-index: 4;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  transform: translateX(-50%);
+  border: 3px solid #f4a91d;
+  background: #e4dd9d;
+  box-shadow: inset 0 0 0 2px #fff3a8, 3px 3px 0 #9c5425;
+  color: #623019;
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(10px, 3vw, 13px);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.game-hud-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.game-hud-stat strong {
+  color: #a63e00;
+  font-size: 1.15em;
+}
+
+.game-hud-divider {
+  width: 2px;
+  height: 20px;
+  background: #a45b31;
+  box-shadow: 1px 0 #fff3a8;
 }
 
 .pause-toggle[hidden],
@@ -184,12 +229,55 @@ button:disabled {
 /* Pause overlay */
 .pause-overlay {
   position: fixed;
-  z-index: 3;
+  z-index: 5;
   inset: 0;
   display: grid;
   place-items: center;
   background: transparent;
   cursor: pointer;
+}
+
+.pause-overlay.is-input-locked {
+  cursor: wait;
+}
+
+.pause-prompt {
+  display: grid;
+  min-width: 190px;
+  min-height: 76px;
+  place-items: center;
+  padding: 14px 20px;
+  border: 4px solid #35180f;
+  background:
+    linear-gradient(90deg, transparent 0 7px, rgb(255 199 106 / 12%) 7px 9px, transparent 9px 18px),
+    linear-gradient(#f7d98a, #eab75d);
+  box-shadow: inset 0 0 0 3px #fff0b0, 0 6px 0 #9c5425, 0 12px 24px rgb(0 0 0 / 30%);
+  color: #a63e00;
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(16px, 5vw, 22px);
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 2px 2px 0 #fff0b0;
+  text-transform: uppercase;
+}
+
+.pause-overlay.is-countdown .pause-prompt {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.pause-prompt strong {
+  font-size: clamp(64px, 20vw, 112px);
+  line-height: 1;
+}
+
+.pause-overlay.is-countdown .pause-prompt strong {
+  color: #fff3a8;
+  text-shadow: 3px 3px 0 #623019, -2px -2px 0 #623019, 0 0 12px rgb(0 0 0 / 65%);
 }
 
 .pause-overlay[hidden] {
@@ -213,7 +301,8 @@ button:disabled {
 .account-dialog[hidden],
 .auth-form [hidden],
 .account-profile[hidden],
-#account-form-content[hidden] {
+#account-form-content[hidden],
+.profile-name-form[hidden] {
   display: none;
 }
 
@@ -291,33 +380,134 @@ button:disabled {
 
 .account-profile {
   display: grid;
-  justify-items: center;
-  gap: 12px;
-  padding-top: 8px;
+  gap: 14px;
+  padding: 8px 10px 0;
   text-align: center;
 }
 
-.profile-name,
-.profile-stats {
-  margin: 0;
+.account-dialog.is-profile .auth-card h1 {
+  margin: 0 44px 20px;
+  color: #c65300;
+  font-size: clamp(22px, 6vw, 30px);
+  font-weight: 900;
+  text-shadow: 2px 2px 0 #fff0b0;
+  text-transform: uppercase;
+}
+
+.account-dialog.is-profile .dialog-close {
+  top: 8px;
+  right: 8px;
+}
+
+.profile-identity {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 2px solid #9c5425;
+  background: #ffe9a5;
 }
 
 .profile-name {
-  color: #164c55;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #a63e00;
   font-size: 20px;
+  font-weight: 900;
+}
+
+.profile-identity .profile-edit-toggle {
+  display: grid;
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 6px;
+}
+
+.profile-edit-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.profile-name-form {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid #9c5425;
+  background: rgb(255 240 176 / 76%);
+  text-align: left;
+}
+
+.profile-name-form label {
+  color: #623019;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.profile-name-form input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px;
+  border: 2px solid #9c5425;
+  border-radius: 0;
+  background: #fff8dc;
+  color: #623019;
+  font: inherit;
+}
+
+.profile-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.profile-message {
+  min-height: 1.2em;
+  margin: -6px 0 !important;
+  color: #a63e00;
+  font-size: 12px;
   font-weight: 700;
 }
 
-.profile-stats {
-  color: #526669;
-  font-size: 14px;
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profile-stat-card {
+  display: grid;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 2px solid #9c5425;
+  background: #ffe9a5;
+  color: #623019;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.profile-stat-card strong {
+  color: #a63e00;
+  font-size: 22px;
 }
 
 .profile-logout {
   width: 100%;
-  margin-top: 8px;
-  background: #188e9e;
-  color: #fff;
+  min-height: 42px;
+}
+
+.account-dialog.is-profile .store-skin-action {
+  min-height: 40px;
+}
+
+.profile-name-form .store-skin-action {
+  min-height: 36px;
 }
 
 /* Ranking dialog */
@@ -367,7 +557,8 @@ button:disabled {
   background: rgb(10 30 35 / 62%);
 }
 
-.store-card {
+.store-card,
+.account-dialog.is-profile .auth-card {
   position: relative;
   width: min(100%, 452px);
   max-height: calc(100dvh - 40px);
@@ -384,6 +575,12 @@ button:disabled {
   color: #623019;
   font-family: "Courier New", Courier, monospace;
   text-align: center;
+}
+
+.account-dialog.is-profile .auth-card {
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  border-radius: 0;
 }
 
 .store-title {
@@ -503,6 +700,11 @@ button:disabled {
   width: 66px;
   height: 48px;
   margin: 0 auto 4px;
+  image-rendering: pixelated;
+}
+
+.store-effect-preview {
+  background: #ffe9a5;
   image-rendering: pixelated;
 }
 

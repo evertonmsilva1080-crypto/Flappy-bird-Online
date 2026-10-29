@@ -5,6 +5,7 @@ const Usuario = require('../models/Usuario');
 const { collation: nomeCollation } = require('../models/nomeUsuario');
 const { findSkin, skinCatalog } = require('../config/skins');
 const { accessoryCatalog, findAccessory } = require('../config/accessories');
+const { effectCatalog, findEffect } = require('../config/effects');
 
 const router = express.Router();
 
@@ -22,6 +23,8 @@ function dadosPublicos(usuario) {
         skinEquipped: usuario.skinEquipped || 'classic',
         accessories: Array.isArray(usuario.accessories) ? usuario.accessories : [],
         accessoryEquipped: usuario.accessoryEquipped || 'none',
+        effects: Array.isArray(usuario.effects) ? usuario.effects : ['effect-white'],
+        effectEquipped: usuario.effectEquipped || 'effect-white',
     };
 }
 
@@ -43,8 +46,8 @@ router.post('/register', async (req, res) => {
     const nome = String(req.body?.nome || '').trim();
     const senha = String(req.body?.senha || '');
 
-    if (nome.length < 2 || nome.length > 60) {
-        return res.status(400).json({ message: 'Informe um nome entre 2 e 60 caracteres.' });
+    if (nome.length < 2 || nome.length > 15) {
+        return res.status(400).json({ message: 'Informe um nome entre 2 e 15 caracteres.' });
     }
     if (senha.length < 8 || senha.length > 72) {
         return res.status(400).json({ message: 'A senha deve ter entre 8 e 72 caracteres.' });
@@ -106,6 +109,40 @@ router.get('/me', autenticar, async (req, res) => {
         console.error('Erro ao consultar usuário:', erro);
         return res.status(500).json({ message: 'Não foi possível consultar a conta.' });
     }
+});
+
+router.post('/profile/name', autenticar, async (req, res) => {
+      const nome = String(req.body?.nome || '').trim();
+      if (nome.length < 2 || nome.length > 15) {
+          return res.status(400).json({ message: 'Informe um nome entre 2 e 15 caracteres.' });
+      }
+
+      try {
+          const nomeEmUso = await Usuario.exists({
+              nome,
+              _id: { $ne: req.usuarioId },
+          }).collation(nomeCollation);
+          if (nomeEmUso) {
+              return res.status(409).json({ message: 'Este nome já está em uso. Escolha outro.' });
+          }
+
+          const usuario = await Usuario.findByIdAndUpdate(
+              req.usuarioId,
+              { $set: { nome } },
+              { new: true, runValidators: true }
+          );
+          if (!usuario) return res.status(404).json({ message: 'Conta não encontrada.' });
+          return res.json({ usuario: dadosPublicos(usuario) });
+      } catch (erro) {
+          if (erro.code === 11000) {
+              return res.status(409).json({ message: 'Este nome já está em uso. Escolha outro.' });
+          }
+          if (erro.name === 'ValidationError') {
+              return res.status(400).json({ message: 'Confira o nome informado.' });
+          }
+          console.error('Erro ao atualizar nome do usuário:', erro);
+          return res.status(500).json({ message: 'Não foi possível atualizar o nome agora.' });
+      }
 });
 
 router.get('/skins', (req, res) => {
@@ -235,6 +272,76 @@ router.post('/accessories/equip', autenticar, async (req, res) => {
     } catch (erro) {
         console.error('Erro ao equipar acessório:', erro);
         return res.status(500).json({ message: 'Não foi possível equipar o acessório.' });
+    }
+});
+
+router.get('/effects', (req, res) => {
+    return res.json({ effects: effectCatalog });
+});
+
+router.post('/effects/purchase', autenticar, async (req, res) => {
+    const effect = findEffect(req.body?.effectId);
+    if (!effect) {
+        return res.status(400).json({ message: 'Efeito inválido.' });
+    }
+    if (effect.price === 0) {
+        return res.status(400).json({ message: 'Este efeito é gratuito e não precisa ser comprado.' });
+    }
+
+    try {
+        const usuario = await Usuario.findOneAndUpdate(
+            {
+                _id: req.usuarioId,
+                moedas: { $gte: effect.price },
+                effects: { $ne: effect.id },
+            },
+            {
+                $inc: { moedas: -effect.price },
+                $addToSet: { effects: { $each: ['effect-white', effect.id] } },
+            },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        if (conta.effects?.includes(effect.id)) {
+            return res.status(409).json({ message: 'Você já possui este efeito.' });
+        }
+        return res.status(400).json({ message: 'Moedas insuficientes para comprar este efeito.' });
+    } catch (erro) {
+        console.error('Erro ao comprar efeito:', erro);
+        return res.status(500).json({ message: 'Não foi possível comprar o efeito.' });
+    }
+});
+
+router.post('/effects/equip', autenticar, async (req, res) => {
+    const effectId = req.body?.effectId;
+    const effect = findEffect(effectId);
+    if (!effect) {
+        return res.status(400).json({ message: 'Efeito inválido.' });
+    }
+
+    try {
+        const filter = { _id: req.usuarioId };
+        if (effect.price > 0) filter.effects = effect.id;
+
+        const usuario = await Usuario.findOneAndUpdate(
+            filter,
+            {
+                $set: { effectEquipped: effect.id },
+                $addToSet: { effects: 'effect-white' },
+            },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        return res.status(403).json({ message: 'Compre este efeito antes de equipá-lo.' });
+    } catch (erro) {
+        console.error('Erro ao equipar efeito:', erro);
+        return res.status(500).json({ message: 'Não foi possível equipar o efeito.' });
     }
 });
 

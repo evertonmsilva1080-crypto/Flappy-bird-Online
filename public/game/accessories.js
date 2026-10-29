@@ -48,7 +48,7 @@ export function drawAccessory(context, accessory, x, y, width, height) {
     x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
 }
 
-export function drawAccessoryOnBird(context, accessory, bird) {
+export function drawAccessoryOnBird(context, accessory, bird, deslocamentoX = 0) {
   const ajuste = accessory.ajuste ?? {};
   const maxWidth = bird.width + 4;
   const maxHeight = bird.height;
@@ -56,7 +56,7 @@ export function drawAccessoryOnBird(context, accessory, bird) {
   const scale = Math.min(maxWidth / accessory.width, maxHeight / accessory.height) * tamanho;
   const drawWidth = accessory.width * scale;
   const drawHeight = accessory.height * scale;
-  const centroX = bird.x + bird.width / 2 + (ajuste.posicaoX ?? 0);
+  const centroX = bird.x + bird.width / 2 + deslocamentoX + (ajuste.posicaoX ?? 0);
   const centroY = bird.y - drawHeight / 2 + 2 + (ajuste.posicaoY ?? 0);
 
   context.save();

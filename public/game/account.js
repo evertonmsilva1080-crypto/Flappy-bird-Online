@@ -1,5 +1,6 @@
 import { setEquippedSkin } from './skins.js';
 import { loadAccessorySheet, setEquippedAccessory } from './accessories.js';
+import { setTrailEffect } from './particles.js';
 
 export async function saveGameResult({ score, coins }) {
   const token = localStorage.getItem('flappy-token');
@@ -36,7 +37,14 @@ export function initializeAccount() {
   const formContent = document.querySelector('#account-form-content');
   const profileContent = document.querySelector('#account-profile');
   const profileName = document.querySelector('#profile-name');
-  const profileStats = document.querySelector('#profile-stats');
+  const profileScore = document.querySelector('#profile-score');
+  const profileCoins = document.querySelector('#profile-coins');
+  const profileNameForm = document.querySelector('#profile-name-form');
+  const profileNameInput = document.querySelector('#profile-name-input');
+  const profileNameSave = document.querySelector('#profile-name-save');
+  const profileNameCancel = document.querySelector('#profile-name-cancel');
+  const profileEditToggle = document.querySelector('#profile-edit-toggle');
+  const profileMessage = document.querySelector('#profile-message');
   const dialogTitle = document.querySelector('#auth-title');
   const message = document.querySelector('#auth-message');
   const nameInput = document.querySelector('#auth-name');
@@ -51,6 +59,7 @@ export function initializeAccount() {
     currentUser = user;
     setEquippedSkin(user?.skinEquipped || 'classic');
     setEquippedAccessory(user?.accessoryEquipped || 'none');
+    setTrailEffect(user?.effectEquipped || 'effect-white');
     if (user?.accessoryEquipped && user.accessoryEquipped !== 'none') {
       loadAccessorySheet().catch((error) =>
         console.error('Falha ao carregar o acessório equipado:', error));
@@ -62,17 +71,24 @@ export function initializeAccount() {
       : '';
     accountStats.textContent = stats;
     profileName.textContent = user ? user.nome : '';
-    profileStats.textContent = stats;
+    profileScore.textContent = String(user?.pontuacaoMaxima || 0);
+    profileCoins.textContent = String(user?.moedas || 0);
+    if (!profileNameForm || profileNameForm.hidden) {
+      profileNameInput.value = user?.nome || '';
+    }
+    profileMessage.textContent = '';
     formContent.hidden = Boolean(user);
     profileContent.hidden = !user;
     logoutButton.hidden = !user;
     dialogTitle.textContent = user ? 'Perfil' : 'Sua conta';
+    dialog.classList.toggle('is-profile', Boolean(user));
   }
 
   function setMode(nextMode) {
     mode = nextMode;
     const registering = mode === 'register';
     passwordInput.autocomplete = registering ? 'new-password' : 'current-password';
+    nameInput.maxLength = registering ? 15 : 60;
     submitButton.textContent = registering ? 'Criar conta' : 'Entrar';
     loginButton.setAttribute('aria-pressed', String(!registering));
     registerButton.setAttribute('aria-pressed', String(registering));
@@ -141,6 +157,48 @@ export function initializeAccount() {
   loginButton.addEventListener('click', () => setMode('login'));
   registerButton.addEventListener('click', () => setMode('register'));
   window.addEventListener('flappy:account-updated', (event) => updateAccount(event.detail));
+
+  profileEditToggle.addEventListener('click', () => {
+    profileNameInput.value = currentUser?.nome || '';
+    profileMessage.textContent = '';
+    profileNameForm.hidden = false;
+    profileEditToggle.setAttribute('aria-expanded', 'true');
+    profileNameInput.focus();
+    profileNameInput.select();
+  });
+
+  profileNameCancel.addEventListener('click', () => {
+    profileNameForm.hidden = true;
+    profileEditToggle.setAttribute('aria-expanded', 'false');
+    profileMessage.textContent = '';
+    profileEditToggle.focus();
+  });
+
+  profileNameForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    profileNameSave.disabled = true;
+    profileMessage.textContent = 'Salvando nome...';
+
+    try {
+      const token = localStorage.getItem('flappy-token');
+      if (!token) throw new Error('Entre na sua conta para alterar o nome.');
+      const result = await requestApi('/profile/name', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ nome: profileNameInput.value }),
+      });
+      updateAccount(result.usuario);
+      profileNameForm.hidden = true;
+      profileEditToggle.setAttribute('aria-expanded', 'false');
+      window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: result.usuario }));
+      profileMessage.textContent = 'Nome atualizado.';
+      profileEditToggle.focus();
+    } catch (error) {
+      profileMessage.textContent = error.message;
+    } finally {
+      profileNameSave.disabled = false;
+    }
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();

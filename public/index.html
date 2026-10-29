@@ -16,30 +16,36 @@
     <main class="game-stage">
       <div class="game-container">
         <canvas id="game-canvas" width="320" height="480" aria-label="Jogo Flappy Bird"></canvas>
-        <button
-          class="pause-toggle"
-          id="pause-toggle"
-          type="button"
-          aria-label="Pausar jogo"
-          title="Pausar jogo"
-          hidden
-        >
-          <span class="pause-icon" aria-hidden="true"><i></i><i></i></span>
-        </button>
-        <button
-          class="profile-toggle"
-          id="account-open"
-          type="button"
-          aria-label="Abrir perfil"
-          title="Perfil"
-        >
-          <svg class="profile-icon" viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14M5 29v-5a11 11 0 0 1 22 0v5z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
-            <path d="M9 25h14" stroke="#fff0b0" stroke-width="2"/>
-          </svg>
-        </button>
       </div>
     </main>
+
+    <button
+      class="pause-toggle"
+      id="pause-toggle"
+      type="button"
+      aria-label="Pausar jogo"
+      title="Pausar jogo"
+      hidden
+    >
+      <span class="pause-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="game-hud" id="game-hud" aria-label="Estatísticas da partida" hidden>
+      <span class="game-hud-stat"><span>Moedas</span><strong id="game-coins">0000</strong></span>
+      <span class="game-hud-divider" aria-hidden="true"></span>
+      <span class="game-hud-stat"><span>Pontos</span><strong id="game-score">0000</strong></span>
+    </div>
+    <button
+      class="profile-toggle"
+      id="account-open"
+      type="button"
+      aria-label="Abrir perfil"
+      title="Perfil"
+    >
+      <svg class="profile-icon" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14M5 29v-5a11 11 0 0 1 22 0v5z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+        <path d="M9 25h14" stroke="#fff0b0" stroke-width="2"/>
+      </svg>
+    </button>
 
     <canvas class="pipe-extension" id="pipe-extension" aria-hidden="true"></canvas>
 
@@ -52,6 +58,10 @@
       tabindex="0"
       hidden
     >
+      <div class="pause-prompt" aria-live="assertive">
+        <span id="pause-message">Jogo pausado</span>
+        <strong id="pause-countdown" hidden></strong>
+      </div>
     </div>
 
     <div class="ranking-dialog" id="ranking-dialog" hidden>
@@ -159,8 +169,11 @@
             hidden
           >
             <h2>Efeitos</h2>
-            <p>Escolha efeitos especiais para suas partidas.</p>
-            <span class="store-coming-soon">Itens em breve</span>
+            <p class="store-wallet" id="effect-wallet"></p>
+            <p class="store-message" id="effect-message" role="status" aria-live="polite">
+              Carregando efeitos...
+            </p>
+            <div class="store-skin-grid" id="store-effect-grid"></div>
           </section>
         </div>
       </section>
@@ -169,7 +182,7 @@
     <div class="account-dialog" id="account-dialog" hidden>
       <section class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
         <button
-          class="dialog-close"
+          class="dialog-close ranking-close store-close"
           id="account-close"
           type="button"
           aria-label="Fechar"
@@ -210,9 +223,40 @@
           </form>
         </div>
         <div class="account-profile" id="account-profile" hidden>
-          <p class="profile-name" id="profile-name"></p>
-          <p class="profile-stats" id="profile-stats"></p>
-          <button class="profile-logout" id="account-logout" type="button">Sair da conta</button>
+          <div class="profile-identity">
+            <p class="profile-name" id="profile-name"></p>
+            <button
+              class="store-skin-action profile-edit-toggle"
+              id="profile-edit-toggle"
+              type="button"
+              aria-label="Editar nome"
+              aria-expanded="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 16.5V20h3.5L19 8.5 15.5 5 4 16.5zM20 7.5a1 1 0 0 0 0-1.4l-2.1-2.1a1 1 0 0 0-1.4 0L14.8 5.7l3.5 3.5L20 7.5z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+          <form class="profile-name-form" id="profile-name-form" hidden>
+            <label for="profile-name-input">Nome do jogador</label>
+            <input id="profile-name-input" name="nome" minlength="2" maxlength="15" required>
+            <div class="profile-edit-actions">
+              <button class="store-skin-action" id="profile-name-save" type="submit">Salvar</button>
+              <button class="store-skin-action" id="profile-name-cancel" type="button">Cancelar</button>
+            </div>
+          </form>
+          <p class="profile-message" id="profile-message" role="status" aria-live="polite"></p>
+          <div class="profile-stat-grid" aria-label="Estatísticas da conta">
+            <div class="profile-stat-card">
+              <span>Pontos</span>
+              <strong id="profile-score">0</strong>
+            </div>
+            <div class="profile-stat-card">
+              <span>Moedas</span>
+              <strong id="profile-coins">0</strong>
+            </div>
+          </div>
+          <button class="store-skin-action profile-logout" id="account-logout" type="button">Sair da conta</button>
         </div>
       </section>
     </div>

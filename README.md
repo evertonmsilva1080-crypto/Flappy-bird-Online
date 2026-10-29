@@ -14,27 +14,36 @@
 O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` diretamente, porque cadastro, login e gravação das partidas precisam da API.
 
 ## Funcionalidades
-- Cadastro e login de usuários.
+- Cadastro e login de usuários; novos nomes de usuário têm de 2 a 15 caracteres.
 - Cada usuário tem um ID do MongoDB, recorde pessoal e saldo de moedas.
+- O perfil permite alterar o nome do jogador, exibe o recorde e o saldo de moedas e oferece saída da conta.
 - As moedas podem ser usadas para comprar skins; skins compradas e a skin equipada ficam salvas na conta.
 - A loja oferece acessórios que podem ser comprados, equipados e salvos na conta do jogador.
+- O rastro de partículas branco clássico é gratuito e padrão; efeitos coloridos custam 50 moedas e estrelinhas/arco-íris custam 75, usando o saldo existente. Efeitos desbloqueados e o efeito equipado ficam salvos na conta.
 - Para ajustar cada acessório sobre o pássaro, edite o bloco `ajuste` do item correspondente em `public/accessories.json`: `posicaoX` move para a direita/esquerda, `posicaoY` para baixo/cima (em pixels do jogo), `rotacao` define o ângulo em graus e `tamanho` define a porcentagem do tamanho original (100 = padrão, 120 = 20% maior, 80 = 20% menor).
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
+- Ao pausar, os comandos para continuar ficam bloqueados por 2 segundos; depois, a retomada exibe uma contagem regressiva de 3 segundos.
+- O ritmo da simulação da partida foi ajustado para 90% do ritmo anterior.
+- Durante o voo, partículas quadradas em pixel art seguem o pássaro e desaparecem gradualmente; o rastro é limpo ao pausar ou terminar a partida.
 - A barra de navegação oferece atalhos para a tela inicial, o ranking e a Loja, além de alternar entre os mapas PNG encontrados em `public/maps/`. A Loja organiza as opções de skins, acessórios e efeitos; o perfil é acessado pelo ícone de pessoa no canto superior direito.
 - Ao terminar a partida, a API salva o recorde usando o maior valor e soma as moedas coletadas na conta autenticada.
 - Para contas autenticadas, a tela de fim de jogo exibe uma medalha conforme a posição do recorde no ranking: dourada para 1º lugar, laranja para 2º, prata para 3º e branca para as posições seguintes com mais de um ponto.
 
 ## API
-- `POST /api/auth/register`: recebe `nome` e `senha`. O nome deve ser único, sem diferenciar maiúsculas de minúsculas.
+- `POST /api/auth/register`: recebe `nome` (de 2 a 15 caracteres) e `senha`. O nome deve ser único, sem diferenciar maiúsculas de minúsculas.
 - `POST /api/auth/login`: recebe `nome` e `senha`.
 - `GET /api/auth/me`: retorna os dados da conta atual.
+- `POST /api/auth/profile/name`: recebe `nome` (de 2 a 15 caracteres) e atualiza o nome da conta autenticada, se ainda não estiver em uso.
 - `GET /api/auth/skins`: retorna o catálogo de skins e seus preços.
 - `POST /api/auth/skins/purchase`: recebe `skinId`, desconta o preço do saldo e registra a skin na conta autenticada.
 - `POST /api/auth/skins/equip`: recebe `skinId` e salva a skin equipada na conta autenticada.
 - `GET /api/auth/accessories`: retorna o catálogo de acessórios e seus preços.
 - `POST /api/auth/accessories/purchase`: recebe `accessoryId`, desconta o preço e salva o acessório na conta autenticada.
 - `POST /api/auth/accessories/equip`: recebe `accessoryId` e salva o acessório equipado; use `none` para remover o acessório.
+- `GET /api/auth/effects`: retorna o catálogo de efeitos e preços.
+- `POST /api/auth/effects/purchase`: recebe `effectId`, desconta moedas e salva o efeito na conta autenticada.
+- `POST /api/auth/effects/equip`: recebe `effectId` e salva o rastro equipado na conta autenticada.
 - `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida e retorna `posicaoRanking` do recorde atualizado. Requer `Authorization: Bearer <token>`.
 - `GET /api/ranking`: retorna o nome e o recorde de todos os usuários, ordenados da maior para a menor pontuação.
 
@@ -47,6 +56,7 @@ Na primeira inicialização após a mudança para login por nome, o servidor rem
 - public/game/assets.js e public/game/background.js cuidam de recursos visuais e sons.
 - public/game/skins.js recorta e exibe as skins da folha de sprites.
 - public/game/accessories.js recorta os acessórios e os desenha sobre o pássaro.
+- public/game/particles.js anima o rastro em pixel art e aplica o efeito escolhido.
 - public/game/account.js cuida de cadastro, login e gravação dos resultados.
 - public/game/ranking.js carrega e exibe o ranking público de jogadores.
 

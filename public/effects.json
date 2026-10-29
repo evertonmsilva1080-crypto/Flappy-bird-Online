@@ -1,0 +1,13 @@
+[
+  { "id": "effect-white", "name": "Branco clássico", "price": 0, "type": "color", "colors": ["#ffffff"] },
+  { "id": "effect-red", "name": "Vermelho", "price": 50, "type": "color", "colors": ["#ff595e", "#c9182b"] },
+  { "id": "effect-blue", "name": "Azul", "price": 50, "type": "color", "colors": ["#73d2ff", "#2878d0"] },
+  { "id": "effect-green", "name": "Verde", "price": 50, "type": "color", "colors": ["#9be564", "#3b9b50"] },
+  { "id": "effect-purple", "name": "Roxo", "price": 50, "type": "color", "colors": ["#d49aff", "#8450c8"] },
+  { "id": "effect-yellow", "name": "Amarelo", "price": 50, "type": "color", "colors": ["#fff078", "#f4a91d"] },
+  { "id": "effect-pink", "name": "Rosa", "price": 50, "type": "color", "colors": ["#ff9fcf", "#e34f9b"] },
+  { "id": "effect-cyan", "name": "Ciano", "price": 50, "type": "color", "colors": ["#8ffff0", "#31bcb8"] },
+  { "id": "effect-gold", "name": "Dourado", "price": 50, "type": "color", "colors": ["#ffe38b", "#d99b2b"] },
+  { "id": "effect-stars", "name": "Estrelinhas", "price": 75, "type": "stars", "colors": ["#fff3a8", "#ffffff"] },
+  { "id": "effect-rainbow", "name": "Arco-íris", "price": 75, "type": "rainbow", "colors": ["#ff595e", "#ff9f43", "#fff078", "#67cc69", "#55b6f9", "#a46de0"] }
+]
