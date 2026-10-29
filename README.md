@@ -17,6 +17,8 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - Cadastro e login de usuários.
 - Cada usuário tem um ID do MongoDB, recorde pessoal e saldo de moedas.
 - As moedas podem ser usadas para comprar skins; skins compradas e a skin equipada ficam salvas na conta.
+- A loja oferece acessórios que podem ser comprados, equipados e salvos na conta do jogador.
+- Para ajustar cada acessório sobre o pássaro, edite o bloco `ajuste` do item correspondente em `public/accessories.json`: `posicaoX` move para a direita/esquerda, `posicaoY` para baixo/cima (em pixels do jogo), `rotacao` define o ângulo em graus e `tamanho` define a porcentagem do tamanho original (100 = padrão, 120 = 20% maior, 80 = 20% menor).
 - Cada obstáculo tem duas passagens; uma delas recebe uma moeda.
 - O jogador escolhe a passagem e coleta a moeda ao tocar nela.
 - A barra de navegação oferece atalhos para a tela inicial, o ranking e a Loja, além de alternar entre os mapas PNG encontrados em `public/maps/`. A Loja organiza as opções de skins, acessórios e efeitos; o perfil é acessado pelo ícone de pessoa no canto superior direito.
@@ -30,6 +32,9 @@ O Express serve o jogo e a API no mesmo endereço. Não abra o `index.html` dire
 - `GET /api/auth/skins`: retorna o catálogo de skins e seus preços.
 - `POST /api/auth/skins/purchase`: recebe `skinId`, desconta o preço do saldo e registra a skin na conta autenticada.
 - `POST /api/auth/skins/equip`: recebe `skinId` e salva a skin equipada na conta autenticada.
+- `GET /api/auth/accessories`: retorna o catálogo de acessórios e seus preços.
+- `POST /api/auth/accessories/purchase`: recebe `accessoryId`, desconta o preço e salva o acessório na conta autenticada.
+- `POST /api/auth/accessories/equip`: recebe `accessoryId` e salva o acessório equipado; use `none` para remover o acessório.
 - `POST /api/auth/game-result`: recebe `pontuacao` e `moedas` da partida e retorna `posicaoRanking` do recorde atualizado. Requer `Authorization: Bearer <token>`.
 - `GET /api/ranking`: retorna o nome e o recorde de todos os usuários, ordenados da maior para a menor pontuação.
 
@@ -41,6 +46,7 @@ Na primeira inicialização após a mudança para login por nome, o servidor rem
 - public/game/bird.js, public/game/pipes.js, public/game/ground.js e public/game/score.js contêm entidades e regras.
 - public/game/assets.js e public/game/background.js cuidam de recursos visuais e sons.
 - public/game/skins.js recorta e exibe as skins da folha de sprites.
+- public/game/accessories.js recorta os acessórios e os desenha sobre o pássaro.
 - public/game/account.js cuida de cadastro, login e gravação dos resultados.
 - public/game/ranking.js carrega e exibe o ranking público de jogadores.
 

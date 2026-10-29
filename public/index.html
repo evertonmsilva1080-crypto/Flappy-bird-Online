@@ -144,8 +144,11 @@
             hidden
           >
             <h2>Acessórios</h2>
-            <p>Adicione acessórios para personalizar seu pássaro.</p>
-            <span class="store-coming-soon">Itens em breve</span>
+            <p class="store-wallet" id="accessory-wallet"></p>
+            <p class="store-message" id="accessory-message" role="status" aria-live="polite">
+              Carregando acessórios...
+            </p>
+            <div class="store-skin-grid" id="store-accessory-grid"></div>
           </section>
           <section
             class="store-panel"
@@ -215,6 +218,7 @@
     </div>
 
     <nav class="bottom-nav" aria-label="Navegação principal">
+      
       <button class="bottom-nav-item" id="home-open" type="button" aria-label="Início">
         <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
           <path d="M3 15L16 4l13 11h-4v13h-8v-8h-4v8H7V15z" fill="#edb34e" stroke="#32170f" stroke-width="2" stroke-linejoin="round"/>
@@ -222,16 +226,9 @@
         </svg>
         <span>Início</span>
       </button>
+
       <span class="bottom-nav-divider" aria-hidden="true"></span>
-      <button class="bottom-nav-item" id="ranking-open" type="button">
-        <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
-          <path d="M7 3h16l4 4v22H7z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
-          <path d="M22 4v5h5M11 13h12M11 18h12M11 23h12" fill="none" stroke="#623019" stroke-width="2"/>
-          <path d="M4 8h3v21H4z" fill="#ae5927" stroke="#32170f" stroke-width="2"/>
-        </svg>
-        <span>Ranking</span>
-      </button>
-      <span class="bottom-nav-divider" aria-hidden="true"></span>
+      
       <button
         class="bottom-nav-item"
         id="map-toggle"
@@ -255,6 +252,15 @@
           <path d="M5 12a4 4 0 0 0 8 0 4 4 0 0 0 8 0 4 4 0 0 0 8 0" fill="#f2c56f" stroke="#32170f" stroke-width="2"/>
         </svg>
         <span>Loja</span>
+      </button>
+      <span class="bottom-nav-divider" aria-hidden="true"></span>
+      <button class="bottom-nav-item" id="ranking-open" type="button">
+        <svg class="bottom-nav-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M7 3h16l4 4v22H7z" fill="#edb34e" stroke="#32170f" stroke-width="2"/>
+          <path d="M22 4v5h5M11 13h12M11 18h12M11 23h12" fill="none" stroke="#623019" stroke-width="2"/>
+          <path d="M4 8h3v21H4z" fill="#ae5927" stroke="#32170f" stroke-width="2"/>
+        </svg>
+        <span>Ranking</span>
       </button>
     </nav>
 

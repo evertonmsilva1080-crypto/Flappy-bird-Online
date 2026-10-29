@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const { collation: nomeCollation } = require('../models/nomeUsuario');
 const { findSkin, skinCatalog } = require('../config/skins');
+const { accessoryCatalog, findAccessory } = require('../config/accessories');
 
 const router = express.Router();
 
@@ -19,6 +20,8 @@ function dadosPublicos(usuario) {
         moedas: usuario.moedas || 0,
         skins: Array.isArray(usuario.skins) ? usuario.skins : ['classic'],
         skinEquipped: usuario.skinEquipped || 'classic',
+        accessories: Array.isArray(usuario.accessories) ? usuario.accessories : [],
+        accessoryEquipped: usuario.accessoryEquipped || 'none',
     };
 }
 
@@ -169,6 +172,69 @@ router.post('/skins/equip', autenticar, async (req, res) => {
     } catch (erro) {
         console.error('Erro ao equipar skin:', erro);
         return res.status(500).json({ message: 'Não foi possível equipar a skin.' });
+    }
+});
+
+router.get('/accessories', (req, res) => {
+    return res.json({ accessories: accessoryCatalog });
+});
+
+router.post('/accessories/purchase', autenticar, async (req, res) => {
+    const accessory = findAccessory(req.body?.accessoryId);
+    if (!accessory) {
+        return res.status(400).json({ message: 'Acessório inválido.' });
+    }
+
+    try {
+        const usuario = await Usuario.findOneAndUpdate(
+            {
+                _id: req.usuarioId,
+                moedas: { $gte: accessory.price },
+                accessories: { $ne: accessory.id },
+            },
+            {
+                $inc: { moedas: -accessory.price },
+                $addToSet: { accessories: accessory.id },
+            },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        if (conta.accessories?.includes(accessory.id)) {
+            return res.status(409).json({ message: 'Você já possui este acessório.' });
+        }
+        return res.status(400).json({ message: 'Moedas insuficientes para comprar este acessório.' });
+    } catch (erro) {
+        console.error('Erro ao comprar acessório:', erro);
+        return res.status(500).json({ message: 'Não foi possível comprar o acessório.' });
+    }
+});
+
+router.post('/accessories/equip', autenticar, async (req, res) => {
+    const accessoryId = req.body?.accessoryId;
+    if (accessoryId !== 'none' && !findAccessory(accessoryId)) {
+        return res.status(400).json({ message: 'Acessório inválido.' });
+    }
+
+    try {
+        const filter = { _id: req.usuarioId };
+        if (accessoryId !== 'none') filter.accessories = accessoryId;
+
+        const usuario = await Usuario.findOneAndUpdate(
+            filter,
+            { $set: { accessoryEquipped: accessoryId } },
+            { new: true, runValidators: true }
+        );
+        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
+
+        const conta = await Usuario.findById(req.usuarioId);
+        if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
+        return res.status(403).json({ message: 'Compre este acessório antes de equipá-lo.' });
+    } catch (erro) {
+        console.error('Erro ao equipar acessório:', erro);
+        return res.status(500).json({ message: 'Não foi possível equipar o acessório.' });
     }
 });
 

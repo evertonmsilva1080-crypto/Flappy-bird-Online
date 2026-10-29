@@ -589,8 +589,8 @@ button:disabled {
 }
 
 .store-close {
-  top: -18px;
-  right: -18px;
+  top: 8px;
+  right: 8px;
 }
 
 .ranking-board {

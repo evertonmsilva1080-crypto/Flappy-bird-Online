@@ -1,4 +1,5 @@
 import { setEquippedSkin } from './skins.js';
+import { loadAccessorySheet, setEquippedAccessory } from './accessories.js';
 
 export async function saveGameResult({ score, coins }) {
   const token = localStorage.getItem('flappy-token');
@@ -49,6 +50,11 @@ export function initializeAccount() {
   function updateAccount(user) {
     currentUser = user;
     setEquippedSkin(user?.skinEquipped || 'classic');
+    setEquippedAccessory(user?.accessoryEquipped || 'none');
+    if (user?.accessoryEquipped && user.accessoryEquipped !== 'none') {
+      loadAccessorySheet().catch((error) =>
+        console.error('Falha ao carregar o acessório equipado:', error));
+    }
     accountName.textContent = user ? 'Olá, ' + user.nome : '';
     accountName.title = user ? 'ID: ' + user.id : '';
     const stats = user
