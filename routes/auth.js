@@ -13,6 +13,15 @@ function criarToken(usuario) {
     return jwt.sign({ sub: String(usuario._id) }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
+function acessoriosEquipados(usuario) {
+    const equipados = Array.isArray(usuario.accessoryEquipped)
+        ? usuario.accessoryEquipped
+        : usuario.accessoryEquipped && usuario.accessoryEquipped !== 'none'
+            ? [usuario.accessoryEquipped]
+            : [];
+    return equipados.filter((accessoryId) => findAccessory(accessoryId));
+}
+
 function dadosPublicos(usuario) {
     return {
         id: String(usuario._id),
@@ -22,7 +31,7 @@ function dadosPublicos(usuario) {
         skins: Array.isArray(usuario.skins) ? usuario.skins : ['classic'],
         skinEquipped: usuario.skinEquipped || 'classic',
         accessories: Array.isArray(usuario.accessories) ? usuario.accessories : [],
-        accessoryEquipped: usuario.accessoryEquipped || 'none',
+        accessoryEquipped: acessoriosEquipados(usuario),
         effects: Array.isArray(usuario.effects) ? usuario.effects : ['effect-white'],
         effectEquipped: usuario.effectEquipped || 'effect-white',
     };
@@ -251,24 +260,35 @@ router.post('/accessories/purchase', autenticar, async (req, res) => {
 
 router.post('/accessories/equip', autenticar, async (req, res) => {
     const accessoryId = req.body?.accessoryId;
-    if (accessoryId !== 'none' && !findAccessory(accessoryId)) {
+    const accessory = accessoryId === 'none' ? null : findAccessory(accessoryId);
+    if (accessoryId !== 'none' && !accessory) {
         return res.status(400).json({ message: 'Acessório inválido.' });
     }
 
     try {
-        const filter = { _id: req.usuarioId };
-        if (accessoryId !== 'none') filter.accessories = accessoryId;
-
-        const usuario = await Usuario.findOneAndUpdate(
-            filter,
-            { $set: { accessoryEquipped: accessoryId } },
-            { new: true, runValidators: true }
-        );
-        if (usuario) return res.json({ usuario: dadosPublicos(usuario) });
-
         const conta = await Usuario.findById(req.usuarioId);
         if (!conta) return res.status(404).json({ message: 'Conta não encontrada.' });
-        return res.status(403).json({ message: 'Compre este acessório antes de equipá-lo.' });
+        if (accessory && !conta.accessories?.includes(accessory.id)) {
+            return res.status(403).json({ message: 'Compre este acessório antes de equipá-lo.' });
+        }
+
+        const equipped = acessoriosEquipados(conta);
+        if (accessoryId === 'none') {
+            equipped.length = 0;
+        } else if (equipped.includes(accessory.id)) {
+            equipped.splice(equipped.indexOf(accessory.id), 1);
+        } else {
+            if (accessory.slot === 'hat') {
+                for (let index = equipped.length - 1; index >= 0; index -= 1) {
+                    if (findAccessory(equipped[index])?.slot === 'hat') equipped.splice(index, 1);
+                }
+            }
+            equipped.push(accessory.id);
+        }
+
+        conta.accessoryEquipped = equipped;
+        await conta.save();
+        return res.json({ usuario: dadosPublicos(conta) });
     } catch (erro) {
         console.error('Erro ao equipar acessório:', erro);
         return res.status(500).json({ message: 'Não foi possível equipar o acessório.' });

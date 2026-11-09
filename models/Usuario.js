@@ -43,9 +43,11 @@ const usuarioSchema = new mongoose.Schema({
         default: [],
     },
     accessoryEquipped: {
-        type: String,
-        enum: ['none', ...accessoryCatalog.map((accessory) => accessory.id)],
-        default: 'none',
+        type: [{
+            type: String,
+            enum: accessoryCatalog.map((accessory) => accessory.id),
+        }],
+        default: [],
     },
     effects: {
         type: [String],

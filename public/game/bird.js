@@ -46,11 +46,10 @@ export function createBird(ground, onFall, onGameOver) {
           visualX, this.y, this.width, this.height);
       }
 
-      const accessoryId = getEquippedAccessory();
-      if (accessoryId !== 'none') {
+      getEquippedAccessory().forEach((accessoryId) => {
         const accessory = getAccessory(accessoryId);
         if (accessory) drawAccessoryOnBird(context, accessory, this, visualOffsetX);
-      }
+      });
     },
   };
 }

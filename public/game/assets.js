@@ -85,7 +85,15 @@ const sounds = {
 
 Object.values(sounds).forEach((sound) => { sound.preload = 'auto'; });
 
+let gameAudioMuted = false;
+
+export function setGameAudioMuted(muted) {
+  gameAudioMuted = muted;
+  Object.values(sounds).forEach((sound) => { sound.muted = muted; });
+}
+
 function playSound(sound) {
+  if (gameAudioMuted) return;
   sound.currentTime = 0;
   const playback = sound.play();
   if (playback) playback.catch(() => {});

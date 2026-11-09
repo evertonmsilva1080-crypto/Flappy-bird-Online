@@ -6,6 +6,7 @@ import {
   getMapBackgroundColor,
   getMapGroundColor,
   playFallSound,
+  setGameAudioMuted,
 } from './assets.js';
 import { createBird } from './bird.js';
 import { createBirdTrail } from './particles.js';
@@ -30,6 +31,7 @@ const SIMULATION_STEP = 1000 / 60;
 let simulationAccumulator = 0;
 let lastFrameTimestamp;
 const pauseButton = document.querySelector('#pause-toggle');
+const soundButton = document.querySelector('#sound-toggle');
 const profileButton = document.querySelector('#account-open');
 const accountBar = document.querySelector('.account-bar');
 const gameHud = document.querySelector('#game-hud');
@@ -298,6 +300,14 @@ export async function startGame() {
 
   pauseButton.addEventListener('click', () => {
     pauseGame();
+  });
+
+  soundButton.addEventListener('click', () => {
+    const muted = soundButton.getAttribute('aria-pressed') !== 'true';
+    setGameAudioMuted(muted);
+    soundButton.setAttribute('aria-pressed', String(muted));
+    soundButton.setAttribute('aria-label', muted ? 'Ativar som do jogo' : 'Silenciar jogo');
+    soundButton.title = muted ? 'Ativar som do jogo' : 'Silenciar jogo';
   });
 
   profileButton.addEventListener('click', () => {

@@ -29,6 +29,20 @@
     >
       <span class="pause-icon" aria-hidden="true"><i></i><i></i></span>
     </button>
+    <button
+      class="sound-toggle"
+      id="sound-toggle"
+      type="button"
+      aria-label="Silenciar jogo"
+      title="Silenciar jogo"
+      aria-pressed="false"
+    >
+      <svg class="sound-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 9v6h4l5 4V5L7 9H3Z" fill="currentColor"/>
+        <path class="sound-wave" d="M15 9a5 5 0 0 1 0 6m2-9a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path class="sound-muted" d="m15 9 6 6m0-6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
     <div class="game-hud" id="game-hud" aria-label="Estatísticas da partida" hidden>
       <span class="game-hud-stat"><span>Moedas</span><strong id="game-coins">0000</strong></span>
       <span class="game-hud-divider" aria-hidden="true"></span>

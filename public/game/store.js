@@ -196,26 +196,39 @@ export function initializeStore() {
 
     const ownedAccessories = currentUser.accessories || [];
     const owned = accessory.id === 'none' || ownedAccessories.includes(accessory.id);
-    const equipped = currentUser.accessoryEquipped === accessory.id;
-    if (equipped) return;
+    const equippedAccessories = Array.isArray(currentUser.accessoryEquipped)
+      ? currentUser.accessoryEquipped
+      : currentUser.accessoryEquipped && currentUser.accessoryEquipped !== 'none'
+        ? [currentUser.accessoryEquipped]
+        : [];
+    const equipped = equippedAccessories.includes(accessory.id);
+    if (accessory.id === 'none' && equippedAccessories.length === 0) return;
 
     button.disabled = true;
-    accessoryMessage.textContent = owned
-      ? 'Equipando ' + accessory.name + '...'
-      : 'Comprando ' + accessory.name + '...';
+    accessoryMessage.textContent = accessory.id === 'none'
+      ? 'Removendo acessórios...'
+      : equipped
+        ? 'Removendo ' + accessory.name + '...'
+        : owned
+          ? 'Equipando ' + accessory.name + '...'
+          : 'Comprando ' + accessory.name + '...';
     try {
       const result = await requestApi(
-        owned ? '/accessories/equip' : '/accessories/purchase',
+        !owned
+          ? '/accessories/purchase'
+          : '/accessories/equip',
         { accessoryId: accessory.id },
       );
       currentUser = result.usuario;
       window.dispatchEvent(new CustomEvent('flappy:account-updated', { detail: currentUser }));
       renderAccessories();
       accessoryMessage.textContent = accessory.id === 'none'
-        ? 'Acessório removido.'
-        : owned
-          ? accessory.name + ' equipado.'
-          : accessory.name + ' comprado e salvo na sua conta.';
+        ? 'Todos os acessórios foram removidos.'
+        : equipped
+          ? accessory.name + ' removido.'
+          : owned
+            ? accessory.name + ' equipado.'
+            : accessory.name + ' comprado e salvo na sua conta.';
     } catch (error) {
       accessoryMessage.textContent = error.message;
       button.disabled = false;
@@ -234,7 +247,12 @@ export function initializeStore() {
     [noAccessory, ...accessories].forEach((accessory) => {
       const owned = accessory.id === 'none' ||
         (currentUser?.accessories || []).includes(accessory.id);
-      const equipped = (currentUser?.accessoryEquipped || 'none') === accessory.id;
+      const equippedAccessories = Array.isArray(currentUser?.accessoryEquipped)
+        ? currentUser.accessoryEquipped
+        : currentUser?.accessoryEquipped && currentUser.accessoryEquipped !== 'none'
+          ? [currentUser.accessoryEquipped]
+          : [];
+      const equipped = equippedAccessories.includes(accessory.id);
       const card = document.createElement('article');
       card.className = 'store-skin-card';
 
@@ -259,14 +277,18 @@ export function initializeStore() {
       const action = document.createElement('button');
       action.className = 'store-skin-action';
       action.type = 'button';
-      action.textContent = equipped
-        ? 'Equipado'
-        : owned
-          ? 'Equipar'
-          : currentUser
-            ? 'Comprar'
-            : 'Entrar';
-      action.disabled = equipped;
+      action.textContent = accessory.id === 'none'
+        ? equippedAccessories.length > 0
+          ? 'Remover todos'
+          : 'Sem acessório'
+        : equipped
+          ? 'Desequipar'
+          : owned
+            ? 'Equipar'
+            : currentUser
+              ? 'Comprar'
+              : 'Entrar';
+      action.disabled = accessory.id === 'none' && equippedAccessories.length === 0;
       action.addEventListener('click', () => purchaseOrEquipAccessory(accessory, action));
 
       card.append(preview, name, price, action);

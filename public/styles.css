@@ -127,7 +127,8 @@ button:disabled {
 }
 
 .pause-toggle,
-.profile-toggle {
+.profile-toggle,
+.sound-toggle {
   position: fixed;
   z-index: 4;
   top: max(12px, env(safe-area-inset-top));
@@ -149,6 +150,28 @@ button:disabled {
 
 .profile-toggle {
   right: max(12px, env(safe-area-inset-right));
+}
+
+.sound-toggle {
+  z-index: 6;
+  right: max(62px, calc(env(safe-area-inset-right) + 50px));
+}
+
+.sound-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.sound-muted {
+  display: none;
+}
+
+.sound-toggle[aria-pressed="true"] .sound-wave {
+  display: none;
+}
+
+.sound-toggle[aria-pressed="true"] .sound-muted {
+  display: block;
 }
 
 .game-hud {
@@ -192,18 +215,21 @@ button:disabled {
 }
 
 .pause-toggle[hidden],
-.profile-toggle[hidden] {
+.profile-toggle[hidden],
+.sound-toggle[hidden] {
   display: none;
 }
 
 .pause-toggle:hover,
-.profile-toggle:hover {
+.profile-toggle:hover,
+.sound-toggle:hover {
   transform: translate(-1px, -1px);
   box-shadow: inset 0 0 0 2px #fff3a8, 4px 4px 0 #9c5425;
 }
 
 .pause-toggle:focus-visible,
-.profile-toggle:focus-visible {
+.profile-toggle:focus-visible,
+.sound-toggle:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 3px;
 }

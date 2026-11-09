@@ -1,7 +1,7 @@
 const accessorySheet = new Image();
 accessorySheet.src = './acess%C3%B3rios/acessorios.png';
 
-let equippedAccessory = 'none';
+let equippedAccessories = [];
 let accessoryCatalog;
 let loadingCatalog;
 
@@ -29,11 +29,15 @@ export function loadAccessorySheet() {
 }
 
 export function setEquippedAccessory(accessoryId) {
-  equippedAccessory = accessoryId || 'none';
+  equippedAccessories = Array.isArray(accessoryId)
+    ? accessoryId
+    : accessoryId && accessoryId !== 'none'
+      ? [accessoryId]
+      : [];
 }
 
 export function getEquippedAccessory() {
-  return equippedAccessory;
+  return equippedAccessories;
 }
 
 export function getAccessory(accessoryId) {

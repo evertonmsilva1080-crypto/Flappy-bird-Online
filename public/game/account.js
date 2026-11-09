@@ -60,7 +60,10 @@ export function initializeAccount() {
     setEquippedSkin(user?.skinEquipped || 'classic');
     setEquippedAccessory(user?.accessoryEquipped || 'none');
     setTrailEffect(user?.effectEquipped || 'effect-white');
-    if (user?.accessoryEquipped && user.accessoryEquipped !== 'none') {
+    if (user?.accessoryEquipped &&
+        (Array.isArray(user.accessoryEquipped)
+          ? user.accessoryEquipped.length > 0
+          : user.accessoryEquipped !== 'none')) {
       loadAccessorySheet().catch((error) =>
         console.error('Falha ao carregar o acessório equipado:', error));
     }
